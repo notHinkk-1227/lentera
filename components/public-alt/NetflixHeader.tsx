@@ -1,4 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Search, UserCircle2 } from "lucide-react";
 
 const NAV_ITEMS = [
@@ -7,12 +11,56 @@ const NAV_ITEMS = [
   { label: "Tentang", active: false },
 ];
 
+// Sama dengan warna latar halaman di app/homepage-netflix/page.tsx (bg-[#141414]).
+// Ini warna navbar begitu discroll — posisi awal (belum discroll) navbar
+// transparan supaya hero terlihat utuh di baliknya.
+const PAGE_BG = "#141414";
+
+const SCROLL_THRESHOLD = 24;
+
 export function NetflixHeader() {
+  // false = posisi awal (belum discroll) -> transparan, hero terlihat penuh di baliknya.
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    function handleScroll() {
+      setIsScrolled(window.scrollY > SCROLL_THRESHOLD);
+    }
+
+    // Cek posisi begitu mount (mis. user reload halaman dalam keadaan sudah discroll).
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="flex items-center justify-between gap-6 px-6 py-4 sm:px-10">
+    <header
+      className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-6 px-6 py-4 transition-colors duration-300 sm:px-10"
+      style={{
+        backgroundColor: isScrolled ? PAGE_BG : "transparent",
+        boxShadow: isScrolled ? "0 1px 0 rgba(255,255,255,0.08)" : "none",
+      }}
+    >
       <div className="flex items-center gap-8">
-        <Link href="/homepage-netflix" className="text-lg font-medium text-white">
-          Repositori<span className="text-[#E5493A]">.</span>
+        <Link href="/homepage-netflix" className="flex items-center gap-2.5">
+          <Image
+            src="/images/brand/lentera-icon.png"
+            alt=""
+            width={32}
+            height={30}
+            className="h-8 w-auto"
+          />
+          <Image
+            src="/images/brand/lentera-wordmark-biro-p2m.png"
+            alt="Biro P2M"
+            width={814}
+            height={113}
+            className="h-4 w-auto opacity-90"
+          />
+          <span aria-hidden className="h-6 w-px bg-white/20" />
+          <span className="text-lg font-medium text-white">
+            LENTERA<span className="text-[#E5493A]">.</span>
+          </span>
         </Link>
         <nav className="hidden gap-6 sm:flex">
           {NAV_ITEMS.map((item) => (
