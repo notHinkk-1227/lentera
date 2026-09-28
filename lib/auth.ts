@@ -35,4 +35,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/login",
   },
+  callbacks: {
+    // Dipanggil setiap request untuk membaca/menulis isi JWT.
+    // `user` hanya terisi sekali, tepat setelah authorize() berhasil.
+    jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.role = user.role;
+      }
+      return token;
+    },
+    // Dipanggil setiap kali `auth()` atau `useSession()` dipanggil di kode kita.
+    // Di sinilah id & role dari token disalin ke session.user yang dipakai di mana-mana.
+    session({ session, token }) {
+      session.user.id = token.id;
+      session.user.role = token.role;
+      return session;
+    },
+  },
 });

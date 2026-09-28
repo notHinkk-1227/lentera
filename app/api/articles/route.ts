@@ -2,6 +2,7 @@
 // Semua business logic ada di articleService — lihat lib/services/articleService.ts
 import { NextRequest, NextResponse } from "next/server";
 import { articleService } from "@/lib/services/articleService";
+import { auth } from "@/lib/auth";
 import { z } from "zod";
 
 // GET /api/articles?query=...&facultyId=...&categoryId=...&page=1
@@ -31,7 +32,16 @@ const submitArticleSchema = z.object({
 
 // POST /api/articles — dosen mengunggah artikel baru
 export async function POST(request: NextRequest) {
-  // TODO: ambil authorId dari session NextAuth (lib/auth.ts), jangan percaya body request.
+  const session = await auth();
+
+  if (!session?.user) {
+    return NextResponse.json({ error: "Belum login" }, { status: 401 });
+  }
+
+  if (session.user.role !== "DOSEN") {
+    return NextResponse.json({ error: "Hanya dosen yang boleh mengunggah artikel" }, { status: 403 });
+  }
+
   const body = await request.json();
   const parsed = submitArticleSchema.safeParse(body);
 
@@ -39,9 +49,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const authorId = "TODO_AMBIL_DARI_SESSION";
-
-  const article = await articleService.submitArticle({ ...parsed.data, authorId });
+  const article = await articleService.submitArticle({
+    ...parsed.data,
+    authorId: session.user.id,
+  });
 
   return NextResponse.json({ data: article }, { status: 201 });
 }

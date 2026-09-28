@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn, getSession } from "next-auth/react";
 
-// TODO: ganti simulasi di bawah dengan signIn("credentials", { email, password })
-// dari next-auth/react begitu koneksi database & NextAuth benar-benar aktif.
-// Konfigurasi provider-nya sudah ada di lib/auth.ts.
 export function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -24,13 +22,25 @@ export function LoginForm() {
 
     setIsSubmitting(true);
 
-    // Simulasi delay request — dihapus begitu terhubung ke NextAuth sungguhan.
-    await new Promise((resolve) => setTimeout(resolve, 600));
+    // redirect: false supaya kita yang atur redirect-nya sendiri (beda tujuan
+    // untuk ADMIN vs DOSEN), bukan NextAuth yang otomatis redirect.
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
 
-    // Dummy: anggap login selalu berhasil, arahkan ke dashboard dosen.
-    // Nanti logic ini pindah ke authorize() di lib/auth.ts (sudah ada),
-    // dan role user (DOSEN/ADMIN) menentukan redirect ke /dosen atau /admin.
-    router.push("/dosen");
+    if (!result || result.error) {
+      setIsSubmitting(false);
+      setError("Email atau kata sandi salah.");
+      return;
+    }
+
+    // signIn() yang berhasil belum langsung mengembalikan data session (cuma
+    // status ok/error), jadi kita ambil session-nya sekali lagi untuk tahu role.
+    const session = await getSession();
+    router.push(session?.user?.role === "ADMIN" ? "/admin" : "/dosen");
+    router.refresh();
   }
 
   return (

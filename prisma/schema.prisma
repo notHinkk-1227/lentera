@@ -22,6 +22,18 @@ enum ArticleStatus {
   REJECTED
 }
 
+enum WorkType {
+  RESEARCH // hasil penelitian
+  PKM      // pengabdian kepada masyarakat
+}
+
+enum Region {
+  LOKAL         // Kota Bandung
+  REGIONAL      // Jawa Barat & provinsi lain
+  NASIONAL
+  INTERNASIONAL
+}
+
 model User {
   id           String    @id @default(cuid())
   name         String
@@ -91,5 +103,75 @@ model Article {
   updatedAt     DateTime          @updatedAt
   publishedAt   DateTime?
 
+  // --- Roadmap Penelitian & PkM ---
+  type             WorkType        @default(RESEARCH)
+  roadmapTopicId   String?
+  roadmapTopic     RoadmapTopic?   @relation(fields: [roadmapTopicId], references: [id])
+  themes           ResearchTheme[]
+  pkmFocusAreas    PkmFocusArea[]
+  region           Region?         // hanya untuk PKM
+  partner          String?         // mitra / desa binaan (opsional)
+
+  // PkM sebagai kelanjutan hasil riset ("riset -> PkM")
+  sourceResearchId String?
+  sourceResearch   Article?        @relation("ResearchToPkm", fields: [sourceResearchId], references: [id])
+  pkmFollowUps     Article[]       @relation("ResearchToPkm")
+
+  @@index([type, status])
   @@map("articles")
+}
+
+// ===== Roadmap Penelitian & PkM (Renstra 2024–2028) =====
+
+// 4 spesialisasi riset unggulan: Sustainability, Inovasi Teknologi,
+// Rich Content and Value, Kolaborasi dan Kreativitas
+model ResearchStream {
+  id     String          @id @default(cuid())
+  slug   String          @unique
+  name   String          @unique
+  themes ResearchTheme[]
+  topics RoadmapTopic[]
+}
+
+// 10 tema penelitian unggulan (Tabel 2): Humaniora, Pangan, Energi, dst.
+// Many-to-many ke spesialisasi (bidang fokus) DAN ke Article.
+model ResearchTheme {
+  id       String           @id @default(cuid())
+  slug     String           @unique
+  name     String           @unique
+  streams  ResearchStream[]
+  articles Article[]
+}
+
+// 6 bidang fokus PkM (berlaku lintas tahun)
+model PkmFocusArea {
+  id       String    @id @default(cuid())
+  slug     String    @unique
+  name     String    @unique
+  articles Article[]
+}
+
+// Satu Topik Besar PkM per tahun (roadmap PkM berbentuk linear)
+model RoadmapYear {
+  year     Int            @id
+  pkmTheme String
+  topics   RoadmapTopic[]
+}
+
+// Satu baris roadmap, mis. "2024-A-Strategi Bisnis Berkelanjutan".
+// Kode "2024-A" TIDAK unik lintas spesialisasi, jadi unik-nya lewat slug:
+//   research-sustainability-2024-a  |  pkm-2024-a
+model RoadmapTopic {
+  id       String         @id @default(cuid())
+  slug     String         @unique
+  type     WorkType
+  year     Int
+  code     String         // "A", "B", ...
+  title    String
+  streamId String?        // hanya untuk RESEARCH
+  stream   ResearchStream? @relation(fields: [streamId], references: [id])
+  roadmapYear RoadmapYear @relation(fields: [year], references: [year])
+  articles Article[]
+
+  @@index([type, year])
 }

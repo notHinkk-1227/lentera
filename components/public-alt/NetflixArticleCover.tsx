@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Zap, TrendingUp, HeartPulse, Brain, Scale, Cpu, type LucideIcon } from "lucide-react";
-import { COVER_THEMES, type CoverThemeKey } from "@/lib/dummy-data";
+import { NETFLIX_COVER_THEMES } from "@/components/public-alt/NetflixCoverThemes";
+import type { CoverThemeKey } from "@/lib/dummy-data";
 import { getCoverImage } from "@/lib/cover-images";
 
 const ICONS: Record<string, LucideIcon> = {
@@ -12,30 +13,25 @@ const ICONS: Record<string, LucideIcon> = {
   cpu: Cpu,
 };
 
-// Cover artikel: gambar pixel art sesuai bidang keilmuan + ikon + judul.
-// Warna tema (bgClass) tetap dipakai sebagai latar cadangan selama gambar dimuat.
-// Belum ada cover asli (upload dosen / render dari sharp) — lihat CLAUDE.md.
-export function ArticleCover({
+export function NetflixArticleCover({
   title,
   theme,
-  size = "md",
+  size = "row",
 }: {
   title: string;
   theme: CoverThemeKey;
-  size?: "sm" | "md" | "lg";
+  size?: "row" | "hero";
 }) {
-  const config = COVER_THEMES[theme];
+  const config = NETFLIX_COVER_THEMES[theme];
   const Icon = ICONS[config.icon];
   const image = getCoverImage(theme, title);
-
-  const sizeClass = {
-    sm: "h-[180px]",
-    md: "h-[200px]",
-    lg: "h-[220px] w-[150px]",
-  }[size];
+  const heightClass = size === "hero" ? "h-[280px]" : "h-[215px]";
 
   return (
-    <div className={`relative w-full overflow-hidden rounded-lg ${config.bgClass} ${sizeClass}`}>
+    <div
+      className={`relative w-full overflow-hidden rounded-md transition-transform duration-300 ease-out hover:scale-105 ${heightClass}`}
+      style={{ backgroundColor: config.bg }}
+    >
       <Image
         src={image.src}
         alt=""
@@ -46,16 +42,15 @@ export function ArticleCover({
         style={{ objectPosition: image.position }}
       />
 
-      {/* Scrim gelap di bagian bawah supaya judul tetap terbaca di atas gambar apa pun */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.4) 38%, rgba(0,0,0,0) 65%)",
+            "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 38%, rgba(0,0,0,0) 65%)",
         }}
       />
 
-      <div className="absolute inset-0 flex flex-col justify-between p-3.5">
+      <div className="absolute inset-0 flex flex-col justify-between p-3">
         <span className="flex h-7 w-7 items-center justify-center rounded-md bg-black/45 backdrop-blur-sm">
           <Icon className="h-4 w-4 text-white" strokeWidth={1.75} />
         </span>
