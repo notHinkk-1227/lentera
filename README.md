@@ -1,66 +1,86 @@
 # Repositori Karya Ilmiah Dosen
 
-Struktur awal project. Baca `PRD.md` (kebutuhan produk) dan `CLAUDE.md` (panduan arsitektur & coding) sebelum melanjutkan development.
+Website institutional repository untuk menghimpun karya ilmiah dosen. Dosen mengunggah karya, admin memverifikasi, publik dapat mencari dan mengunduh karya yang sudah dipublikasikan.
+
+**Stack:** Next.js (App Router) · TypeScript · PostgreSQL · Prisma · NextAuth (Auth.js) · Tailwind CSS
+
+## Dokumen Penting
+
+| File | Isi |
+| --- | --- |
+| [`PRD.md`](PRD.md) | Kebutuhan produk |
+| [`CLAUDE.md`](CLAUDE.md) | Arsitektur & aturan coding |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Alur kerja tim, branch, commit, PR |
+
+## Prasyarat
+
+- Node.js 20+ (disarankan 22)
+- PostgreSQL lokal, atau database cloud (Neon/Supabase)
 
 ## Menjalankan Project
 
-1. Install dependency:
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+cp .env.example .env        # lalu isi DATABASE_URL dan AUTH_SECRET
+npx prisma generate
+npx prisma migrate dev
+npx prisma db seed          # opsional, data awal
+npm run dev
+```
 
-2. Siapkan database PostgreSQL lokal (atau pakai layanan cloud seperti Supabase/Neon untuk development juga).
+Buka http://localhost:3000.
 
-3. Salin `.env.example` menjadi `.env`, lalu isi `DATABASE_URL` dan `AUTH_SECRET`.
+## Script
 
-4. Generate Prisma Client & jalankan migrasi awal:
-   ```bash
-   npx prisma generate
-   npx prisma migrate dev --name init
-   ```
-
-5. Jalankan development server:
-   ```bash
-   npm run dev
-   ```
+| Perintah | Fungsi |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` / `npm start` | Build & jalankan production |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | Cek tipe TypeScript |
 
 ## Struktur Folder
 
 ```
 app/
-  (public)/            # halaman publik: homepage, detail artikel, hasil pencarian
-  (dashboard)/          # halaman dosen & admin (perlu auth)
-  api/
-    articles/            # endpoint CRUD artikel
-    auth/                 # endpoint auth (NextAuth)
-    upload/               # endpoint upload file & cover
-prisma/
-  schema.prisma          # skema database
+  (public)/        halaman publik: homepage, detail artikel, pencarian
+  homepage-netflix/ versi alternatif homepage (tema gelap)
+  (dashboard)/     halaman dosen & admin (perlu login)
+  api/             route handler (articles, auth, upload)
+prisma/            schema.prisma, migrasi, seed
 lib/
-  db.ts                   # instance Prisma Client
-  auth.ts                  # konfigurasi NextAuth
-  services/                # business logic (articleService, coverService, dst)
-  repositories/            # akses data via Prisma
-  storage/                 # abstraksi file storage (lokal vs cloud)
-components/               # komponen UI reusable
+  db.ts            Prisma Client
+  auth.ts          konfigurasi NextAuth
+  services/        business logic
+  repositories/    akses data via Prisma
+  storage/         abstraksi file storage (lokal vs cloud)
+components/        komponen UI (auth, dashboard, layout, public, public-alt)
+types/             augmentasi tipe NextAuth
 ```
 
-## Status Saat Ini
+Alur data: `route handler → service → repository → Prisma`.
 
-Yang sudah dibuat:
-- Setup project Next.js (TypeScript, Tailwind, App Router)
-- Struktur folder sesuai CLAUDE.md
-- Skema database awal (`prisma/schema.prisma`) — masih perlu direview & didetailkan
-- Skeleton layer: repository, service, storage, route handler artikel
-- Konfigurasi dasar NextAuth (Credentials provider)
+## Status Pengembangan
 
-Yang belum diimplementasikan (masih berupa `TODO`/placeholder):
-- Implementasi nyata `TemplateCoverStrategy` (generate cover pakai `sharp`/`canvas`)
-- Implementasi nyata `LocalStorage`/`CloudStorage` untuk upload file
-- Mengambil `authorId` dari session NextAuth di route handler artikel (saat ini masih placeholder string)
-- Halaman UI (`app/(public)`, `app/(dashboard)`) — baru berupa folder kosong
-- Migrasi database (`npx prisma migrate dev`) — belum dijalankan, perlu koneksi database aktif
+<!-- Perbarui bagian ini tiap ada progres. Detail task ada di tab Issues. -->
 
-## Catatan
+Sudah ada:
+- [x] Setup project (Next.js, TypeScript, Tailwind, Prisma)
+- [x] Skema database + 2 migrasi (`init`, `roadmap`) + seed
+- [x] Login (NextAuth Credentials, JWT berisi `id` & `role`)
+- [x] UI halaman publik (homepage formal, pencarian, detail artikel)
+- [x] UI alternatif homepage bertema Netflix (`/homepage-netflix`)
+- [x] UI dashboard dosen (unggah) & admin (antrean verifikasi, kelola)
 
-Project ini di-scaffold di lingkungan sandbox yang tidak punya akses ke `binaries.prisma.sh`, sehingga `npx prisma generate` belum sempat dijalankan/diverifikasi di sini. Jalankan perintah tersebut begitu project ini ada di komputer kamu sendiri.
+Masih berupa dummy / TODO:
+- [ ] Halaman masih memakai `lib/dummy-data.ts`, belum `articleService`
+- [ ] Server action verifikasi admin belum terhubung ke database
+- [ ] Cek role (ADMIN vs DOSEN) per halaman & per action
+- [ ] `LocalStorage` / `CloudStorage` (upload file & cover)
+- [ ] `TemplateCoverStrategy` (generate cover otomatis)
+- [ ] Endpoint download (increment counter)
+- [ ] Putuskan: homepage formal atau Netflix yang jadi utama
+
+## Kontribusi
+
+Lihat [`CONTRIBUTING.md`](CONTRIBUTING.md).

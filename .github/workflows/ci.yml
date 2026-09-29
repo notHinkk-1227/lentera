@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # Nilai dummy: cukup agar build tidak gagal, tidak terhubung ke DB asli
+      DATABASE_URL: postgresql://user:password@localhost:5432/dummy
+      AUTH_SECRET: ci-dummy-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run typecheck
