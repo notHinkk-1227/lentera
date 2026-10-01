@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { dummyCurrentAdmin, dummyCurrentDosen } from "@/lib/dummy-data";
+import type { Role } from "@prisma/client";
 
 const DOSEN_NAV_ITEMS = [
   { href: "/dosen", label: "Ringkasan" },
-  { href: "/dosen/artikel", label: "Artikel saya" },
-  { href: "/dosen/unggah", label: "Unggah artikel" },
+  { href: "/dosen/artikel", label: "Karya saya" },
+  { href: "/dosen/unggah", label: "Unggah karya" },
 ];
 
 const ADMIN_NAV_ITEMS = [
@@ -15,23 +15,24 @@ const ADMIN_NAV_ITEMS = [
   { href: "/admin/kelola", label: "Fakultas & kategori" },
 ];
 
-// Sidebar otomatis menyesuaikan menu & identitas berdasarkan area yang sedang
-// dibuka (/dosen/* vs /admin/*). Client component karena butuh usePathname.
-// TODO: ganti dummyCurrentDosen/dummyCurrentAdmin dengan data session NextAuth
-// (role user menentukan area mana yang boleh diakses).
-export function DashboardSidebar() {
-  const pathname = usePathname();
-  const isAdmin = pathname?.startsWith("/admin");
+const ROLE_LABEL: Record<Role, string> = {
+  ADMIN: "Admin",
+  DOSEN: "Dosen",
+};
 
-  const navItems = isAdmin ? ADMIN_NAV_ITEMS : DOSEN_NAV_ITEMS;
-  const user = isAdmin ? dummyCurrentAdmin : dummyCurrentDosen;
-  const roleLabel = isAdmin ? "Admin" : "Dosen";
+// Menu dan identitas ditentukan oleh peran pada sesi login, bukan oleh URL.
+// Client component karena butuh usePathname untuk menandai menu aktif.
+export function DashboardSidebar({ user }: { user: { name: string; role: Role } }) {
+  const pathname = usePathname();
+  const navItems = user.role === "ADMIN" ? ADMIN_NAV_ITEMS : DOSEN_NAV_ITEMS;
 
   return (
     <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-surface px-5 py-6">
       <div className="mb-8">
-        <p className="font-serif text-lg leading-tight text-ink">Repositori</p>
-        <p className="font-serif text-lg leading-tight text-ink">Karya Ilmiah</p>
+        <Link href="/" className="font-serif text-xl leading-tight text-ink">
+          LENTERA
+        </Link>
+        <p className="mt-1 text-xs text-ink-soft">Universitas Widyatama</p>
       </div>
 
       <nav className="flex flex-col gap-1">
@@ -53,7 +54,7 @@ export function DashboardSidebar() {
 
       <div className="mt-auto border-t border-border pt-4">
         <p className="text-sm font-medium text-ink">{user.name}</p>
-        <p className="text-xs text-ink-soft">{roleLabel}</p>
+        <p className="text-xs text-ink-soft">{ROLE_LABEL[user.role]}</p>
       </div>
     </aside>
   );

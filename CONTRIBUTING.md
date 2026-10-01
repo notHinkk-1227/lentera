@@ -72,4 +72,4 @@ Sebagian besar halaman masih memakai `lib/dummy-data.ts`. Saat mengganti ke data
 
 - Panggil `articleService`, jangan Prisma/dummy langsung dari page atau server action.
 - Hapus komentar `TODO` yang bersangkutan setelah selesai.
-- Setiap server action (`"use server"`) dan route handler yang mengubah data **wajib** cek `auth()` dan role (`ADMIN`/`DOSEN`) sendiri. Jangan mengandalkan layout saja.
+- Setiap halaman dashboard, server action (`"use server"`), dan route handler yang dibatasi peran **wajib** memanggil `requireRole()` dari `lib/authz.ts` (atau cek `auth()` + role sendiri untuk route handler). Jangan mengandalkan layout saja.

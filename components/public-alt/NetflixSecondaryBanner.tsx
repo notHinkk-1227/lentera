@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { FileText, Bookmark } from "lucide-react";
 import { NETFLIX_COVER_THEMES } from "@/components/public-alt/NetflixCoverThemes";
 import { getHeroImage } from "@/lib/cover-images";
@@ -36,7 +37,14 @@ export function NetflixSecondaryBanner({ article }: { article: PublicArticle }) 
         }}
       />
 
-      <div className="absolute inset-x-0 bottom-0 px-6 py-6 sm:px-8 sm:py-7">
+      {/* Seluruh banner bisa diklik (stretched link); lihat catatan di NetflixHero. */}
+      <Link
+        href={`/articles/${article.id}`}
+        aria-label={`Buka artikel: ${article.title}`}
+        className="absolute inset-0 z-10"
+      />
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-6 py-6 sm:px-8 sm:py-7">
         <span className="inline-block rounded-md bg-white/10 px-2.5 py-1 text-xs text-white/70">
           {article.categoryName} · {article.year}
         </span>
@@ -47,14 +55,14 @@ export function NetflixSecondaryBanner({ article }: { article: PublicArticle }) 
           {article.abstract}
         </p>
 
-        <div className="mt-4 flex gap-3">
-          <a
+        <div className="pointer-events-auto mt-4 flex gap-3">
+          <Link
             href={`/articles/${article.id}`}
             className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition-opacity hover:opacity-90"
           >
             <FileText className="h-4 w-4" strokeWidth={2} />
             Baca artikel
-          </a>
+          </Link>
           <button className="inline-flex items-center gap-2 rounded-md bg-white/15 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/25">
             <Bookmark className="h-4 w-4" strokeWidth={1.75} />
             Simpan

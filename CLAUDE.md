@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Panduan kerja untuk Claude (via Claude Code) saat membantu pengembangan project **Repositori Karya Ilmiah Dosen**. Lihat `PRD.md` untuk detail lengkap kebutuhan produk.
+Panduan kerja untuk Claude (via Claude Code) saat membantu pengembangan project **LENTERA** (Layanan Eksplorasi Penelitian, Teknologi & Pengabdian, Universitas Widyatama). Lihat `PRD.md` untuk detail lengkap kebutuhan produk.
 
 ## Ringkasan Project
 

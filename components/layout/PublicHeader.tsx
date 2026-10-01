@@ -5,7 +5,7 @@ export function PublicHeader() {
     <header className="border-b border-border bg-surface">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="font-serif text-lg text-ink">
-          Repositori Karya Ilmiah
+          LENTERA
         </Link>
         <div className="flex items-center gap-3">
           <Link
@@ -18,7 +18,7 @@ export function PublicHeader() {
             href="/dosen/unggah"
             className="rounded-md bg-ink px-4 py-2 text-sm font-medium text-paper transition-opacity hover:opacity-90"
           >
-            Unggah artikel
+            Unggah karya
           </Link>
         </div>
       </div>

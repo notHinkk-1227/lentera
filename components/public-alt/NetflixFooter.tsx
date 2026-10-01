@@ -18,7 +18,7 @@ export function NetflixFooter() {
       </div>
 
       <p className="mt-8 text-xs text-white/30">
-        © {new Date().getFullYear()} Repositori Karya Ilmiah — Universitas.
+        © {new Date().getFullYear()} LENTERA — Universitas Widyatama.
       </p>
     </footer>
   );

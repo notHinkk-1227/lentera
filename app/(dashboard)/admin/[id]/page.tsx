@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { ArticleCover } from "@/components/public/ArticleCover";
 import { PdfPreviewPlaceholder } from "@/components/dashboard/PdfPreviewPlaceholder";
 import { ArticleReviewActions } from "@/components/dashboard/ArticleReviewActions";
+import { requireRole } from "@/lib/authz";
 import { getQueuedArticleById } from "@/lib/dummy-data";
 
 function formatDate(iso: string) {
@@ -21,6 +22,7 @@ export default async function AdminArticleReviewPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireRole("ADMIN");
   const { id } = await params;
   const article = getQueuedArticleById(id);
 

@@ -1,11 +1,8 @@
-import Link from "next/link";
-import { Download } from "lucide-react";
-import { NetflixArticleCover } from "@/components/public-alt/NetflixArticleCover";
+import { NetflixArticleCard } from "@/components/public-alt/NetflixArticleCard";
 import type { PublicArticle } from "@/lib/dummy-data";
 
-// Sort pill di sini masih visual saja (belum benar-benar mengubah urutan) —
-// cukup untuk perbandingan arah desain dengan klien. Kalau tema ini
-// disetujui, sort sungguhan bisa disambungkan ke articleService nanti.
+// Sort pill di sini masih visual saja (belum benar-benar mengubah urutan).
+// TODO: sambungkan ke articleService begitu database aktif.
 const SORT_OPTIONS = ["Terbaru", "Tahun", "A-Z"];
 
 export function NetflixBrowseGrid({ articles }: { articles: PublicArticle[] }) {
@@ -27,18 +24,9 @@ export function NetflixBrowseGrid({ articles }: { articles: PublicArticle[] }) {
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {articles.map((article) => (
-          <Link key={article.id} href={`/articles/${article.id}`}>
-            <NetflixArticleCover title={article.title} theme={article.coverTheme} />
-            <div className="mt-2 flex items-center justify-between text-xs text-white/50">
-              <span>{article.year}</span>
-              <span className="flex items-center gap-1">
-                <Download className="h-3 w-3" strokeWidth={1.75} />
-                {article.downloadCount}
-              </span>
-            </div>
-          </Link>
+          <NetflixArticleCard key={article.id} article={article} className="w-full" />
         ))}
       </div>
     </section>

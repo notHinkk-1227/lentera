@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Repositori Karya Ilmiah Dosen",
-  description: "Perpustakaan digital artikel dan jurnal dosen",
+  title: {
+    default: "LENTERA — Layanan Eksplorasi Penelitian, Teknologi & Pengabdian",
+    template: "%s | LENTERA",
+  },
+  description:
+    "Etalase hasil penelitian dan pengabdian kepada masyarakat Universitas Widyatama.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -1,9 +1,12 @@
 import { ManageListPanel } from "@/components/dashboard/ManageListPanel";
+import { requireRole } from "@/lib/authz";
 import { dummyFaculties, dummyCategories } from "@/lib/dummy-data";
 
 // TODO: ganti dummyFaculties/dummyCategories dengan data dari
 // facultyRepository/categoryRepository (belum dibuat) begitu backend aktif.
-export default function ManageFacultiesAndCategoriesPage() {
+export default async function ManageFacultiesAndCategoriesPage() {
+  await requireRole("ADMIN");
+
   return (
     <div>
       <h1 className="font-serif text-2xl text-ink">Fakultas & kategori</h1>

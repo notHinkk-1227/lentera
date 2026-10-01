@@ -9,11 +9,15 @@ import { z } from "zod";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
+  // `page` dari query string bisa berupa apa saja ("abc", "-3", "0"); paksa jadi bilangan bulat >= 1.
+  const pageParam = Number.parseInt(searchParams.get("page") ?? "1", 10);
+  const page = Number.isFinite(pageParam) && pageParam >= 1 ? pageParam : 1;
+
   const articles = await articleService.searchPublicArticles({
     query: searchParams.get("query") ?? undefined,
     facultyId: searchParams.get("facultyId") ?? undefined,
     categoryId: searchParams.get("categoryId") ?? undefined,
-    page: Number(searchParams.get("page") ?? "1"),
+    page,
   });
 
   return NextResponse.json({ data: articles });

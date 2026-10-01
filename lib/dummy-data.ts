@@ -19,19 +19,12 @@ export type DummyArticle = {
   publishedAt?: string;
 };
 
-// Dosen yang sedang login — dummy untuk sesi development sebelum NextAuth terhubung penuh.
+// Dosen yang sedang login — dummy; sekarang hanya dipakai untuk fakultas di form unggah.
 export const dummyCurrentDosen = {
   id: "usr_1",
   name: "Dr. Andi Wijaya",
   email: "andi.wijaya@kampus.ac.id",
   facultyName: "Fakultas Teknik",
-};
-
-// Admin yang sedang login — sama seperti dummyCurrentDosen, dummy sementara.
-export const dummyCurrentAdmin = {
-  id: "usr_admin_1",
-  name: "Rini Kartika",
-  email: "rini.kartika@kampus.ac.id",
 };
 
 export const dummyArticles: DummyArticle[] = [

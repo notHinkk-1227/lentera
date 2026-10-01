@@ -11,7 +11,7 @@ const NAV_ITEMS = [
   { label: "Tentang", active: false },
 ];
 
-// Sama dengan warna latar halaman di app/homepage-netflix/page.tsx (bg-[#141414]).
+// Sama dengan warna latar halaman di app/page.tsx (bg-[#141414]).
 // Ini warna navbar begitu discroll — posisi awal (belum discroll) navbar
 // transparan supaya hero terlihat utuh di baliknya.
 const PAGE_BG = "#141414";
@@ -42,7 +42,7 @@ export function NetflixHeader() {
       }}
     >
       <div className="flex items-center gap-8">
-        <Link href="/homepage-netflix" className="flex items-center gap-2.5">
+        <Link href="/" className="flex items-center gap-2.5">
           <Image
             src="/images/brand/lentera-icon.png"
             alt=""
@@ -92,7 +92,7 @@ export function NetflixHeader() {
           href="/dosen/unggah"
           className="rounded-md bg-[#D8432F] px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
-          Unggah artikel
+          Unggah karya
         </Link>
       </div>
     </header>

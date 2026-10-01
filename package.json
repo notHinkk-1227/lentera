@@ -1,5 +1,5 @@
 {
-  "name": "repo-jurnal-dosen",
+  "name": "lentera",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "db:seed:roadmap": "tsx prisma/seed-roadmap.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -3,6 +3,16 @@
 import { db } from "@/lib/db";
 import type { ArticleStatus, Prisma } from "@prisma/client";
 
+// Prisma belum mendukung pencarian sebagian/tanpa-huruf-besar pada kolom array (String[]).
+// `hasSome` hanya cocok persis, jadi kita coba beberapa variasi huruf dari kata yang diketik
+// agar "energi" tetap menemukan kata kunci "Energi". Pencarian sebagian pada kata kunci
+// (mis. "ener" -> "Energi") baru bisa bila kata kunci dipindah ke tabel tersendiri.
+function keywordVariants(query: string) {
+  const trimmed = query.trim();
+  const capitalized = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+  return Array.from(new Set([trimmed, trimmed.toLowerCase(), trimmed.toUpperCase(), capitalized]));
+}
+
 export const articleRepository = {
   findPublished(params: {
     query?: string;
@@ -23,7 +33,7 @@ export const articleRepository = {
         ? {
             OR: [
               { title: { contains: query, mode: "insensitive" } },
-              { keywords: { has: query } },
+              { keywords: { hasSome: keywordVariants(query) } },
               { author: { name: { contains: query, mode: "insensitive" } } },
             ],
           }

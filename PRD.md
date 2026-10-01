@@ -155,7 +155,7 @@ MAESTRO adalah menu tambahan LENTERA berisi profil dosen/peneliti Universitas Wi
 
 | ID | Kebutuhan | Kriteria penerimaan |
 |---|---|---|
-| FR-MAE-01 | Menu MAESTRO | Navigasi utama memuat Beranda, Penelitian, PkM (keduanya mengarah ke pencarian dengan filter tipe), dan MAESTRO (`/maestro`), tampil di kedua homepage dan halaman publik lain `[ASUMSI: mengikuti pola ITB Scholar]` |
+| FR-MAE-01 | Menu MAESTRO | Navigasi utama memuat Beranda, Penelitian, PkM (keduanya mengarah ke pencarian dengan filter tipe), dan MAESTRO (`/maestro`), tampil di homepage dan halaman publik lain `[ASUMSI: mengikuti pola ITB Scholar]` |
 | FR-MAE-02 | Daftar dosen | Kartu berisi foto, nama dengan gelar, fakultas, serta jumlah penelitian dan PkM; pencarian nama; filter fakultas (dan prodi bila 11.7 disetujui), SDG, dan tipe karya; urut default abjad dengan opsi urut jumlah karya; terpaginasi |
 | FR-MAE-03 | Halaman detail dosen `/maestro/[slug]` | Menampilkan seluruh data pada tabel 5.9.1 |
 | FR-MAE-04 | Statistik jumlah karya | Dihitung dari karya `PUBLISHED` tempat dosen tercatat sebagai penulis (posisi mana pun), dipisah `RESEARCH` dan `PKM`; karya `PENDING`/`REJECTED` tidak dihitung; angka di daftar dan di detail selalu sama |
@@ -251,20 +251,13 @@ Identitas: **LENTERA** dengan sub-judul "Layanan Eksplorasi Penelitian, Teknolog
 
 Prinsip: terinspirasi pola interaksi Netflix (hero, baris horizontal, kartu bercover), tetap kredibel dan informatif. Search bar selalu menjadi elemen utama.
 
-Dua varian homepage saat ini di kode:
-
-| Varian | Rute | Ciri |
-|---|---|---|
-| Formal-akademik | `/` | Latar kertas hangat, aksen brass, tipografi serif |
-| LENTERA gelap | `/homepage-netflix` | Latar gelap, aksen merah, hero gambar, Top 10, hover card |
-
-`[PERLU KONFIRMASI 11.1]` Varian utama. Sampai diputuskan, keduanya dipertahankan dan **fungsinya harus sama** (`FR-PUB-01..06`).
+Homepage utama (`/`) memakai varian **LENTERA gelap**: latar gelap, aksen merah, hero gambar, baris Top 10, dan hover card. Varian formal-akademik (latar kertas hangat, aksen brass, tipografi serif) sudah dihapus dari kode (keputusan 11.1, 2 Oktober 2026). Halaman `/search` dan `/articles/[id]` masih memakai tema terang dan perlu diseragamkan dengan homepage.
 
 **Cover:** gambar pixel art per bidang keilmuan, dipilih deterministik dari hash judul, dengan ikon dan judul di atasnya; dosen dapat mengunggah cover sendiri.
 
 **SDG di UI:** tampil sebagai deretan ikon/lencana kecil di kartu dan halaman detail, dengan nama tujuan saat di-hover. Periksa pedoman penggunaan logo dan ikon SDG dari PBB sebelum dipakai `[PERLU KONFIRMASI]`.
 
-**MAESTRO di UI:** menu muncul di navigasi kedua homepage. Halaman daftar memakai kartu dosen (foto potret, nama dengan gelar, fakultas, dua angka: penelitian dan PkM). Halaman detail berisi header profil, dua kartu angka, deretan SDG dengan jumlah, dan dua grafik batang horizontal untuk persentase topik roadmap (Penelitian dan PkM). Nilai persentase dan jumlah selalu ditulis sebagai teks di samping batang, tidak hanya warna. Bahasa visualnya mengikuti varian homepage yang dipilih (11.1).
+**MAESTRO di UI:** menu muncul di navigasi homepage. Halaman daftar memakai kartu dosen (foto potret, nama dengan gelar, fakultas, dua angka: penelitian dan PkM). Halaman detail berisi header profil, dua kartu angka, deretan SDG dengan jumlah, dan dua grafik batang horizontal untuk persentase topik roadmap (Penelitian dan PkM). Nilai persentase dan jumlah selalu ditulis sebagai teks di samping batang, tidak hanya warna. Bahasa visualnya mengikuti homepage gelap (11.1).
 
 **Referensi utama:** ITB Scholar (scholar.itb.ac.id) untuk halaman detail karya dan profil peneliti, lihat 13.1. **Referensi pembanding:** Google Scholar, ResearchGate, Semantic Scholar.
 
@@ -283,7 +276,7 @@ Dua varian homepage saat ini di kode:
 
 | # | Pertanyaan | Rekomendasi |
 |---|---|---|
-| 11.1 | Homepage utama: formal atau LENTERA gelap? | Pilih satu sebagai `/`, arsipkan yang lain |
+| 11.1 | Homepage utama: formal atau LENTERA gelap? | **Diputuskan (2 Okt 2026): LENTERA gelap menjadi `/`; homepage formal dihapus.** Tersisa: `/search` dan `/articles/[id]` masih terang dan perlu diseragamkan |
 | 11.2 | Setelah `REJECTED`, revisi atau unggah baru? | Revisi + kirim ulang (`FR-VERIF-04`) |
 | 11.5 | Hosting Vercel vs server kampus | Cek kebijakan PUSKOM/IT Widyatama |
 | 11.6 | Notifikasi email hasil verifikasi | Tunda ke fase lanjutan |
@@ -303,20 +296,21 @@ Dua varian homepage saat ini di kode:
 | **11.20** | Metrik seperti H-index, jumlah sitasi, dan kuartil jurnal (ditampilkan ITB Scholar) | Tidak di fase 1; butuh sumber data (OpenAlex/Scopus) dan kebijakan kampus soal menampilkannya di profil dosen |
 | **11.21** | Unit riset/pusat studi (ITB Scholar memisahkan "Research Units" dan menampilkannya di profil) | Tanyakan apakah Widyatama punya pusat studi atau kelompok riset yang perlu tampil; bila ada, jadikan fase lanjutan |
 
-## 12. Status Implementasi Terhadap PRD (per 28 September 2026)
+## 12. Status Implementasi Terhadap PRD (per 28 September 2026, diperbarui 2 Oktober 2026)
 
 | Area | Status |
 |---|---|
 | Skema DB, migrasi, seed | Ada, **belum ada SDG, penulis majemuk, dan field tautan eksternal**; enum `Role` hanya `ADMIN`/`DOSEN` |
 | Login, session dengan role | Ada |
-| Otorisasi per peran (`FR-AUTH-03`) | **Belum**, hanya cek login |
-| `GET /api/articles` | Ada; pencarian kata kunci masih persis |
+| Otorisasi per peran (`FR-AUTH-03`) | **Sebagian**: `requireRole()` (`lib/authz.ts`) terpasang di semua halaman dashboard dan Server Action admin; `POST /api/articles` hanya untuk `DOSEN`. Sidebar memakai identitas dari sesi. Belum ada pengujian otomatis |
+| `GET /api/articles` | Ada; kata kunci cocok penuh tanpa peka huruf besar/kecil, belum cocok sebagian (`FR-PUB-02`); parameter `page` divalidasi |
 | `POST /api/articles`, upload, cover otomatis | **Belum berfungsi** (storage dan cover melempar error) |
 | Halaman publik dan dashboard | UI ada, **masih memakai data dummy** |
 | SDG, daftar penulis, tautan Scholar/Scopus, meta tag `citation_*` | **Belum ada** di skema, form, maupun UI |
 | MAESTRO (`/maestro`, profil dosen, statistik) | **Belum ada**: tidak ada rute, model profil, maupun query statistik. Data dosen hanya `User` (nama dengan gelar menyatu, email, fakultas), tanpa foto |
-| Nama LENTERA | Sebagian: header Netflix sudah "LENTERA"; header formal, halaman login, footer, metadata `layout.tsx`, dan `package.json` masih "Repositori Karya Ilmiah"/`repo-jurnal-dosen`; footer masih "Universitas" generik |
-| `/dosen/artikel`, kelola akun, rekap CSV | Belum ada |
+| Nama LENTERA | Sudah di antarmuka (header, login, sidebar, footer, metadata) dan `package.json`; tersisa nama tampil di data dummy |
+| `/dosen/artikel` | Halaman ada tetapi masih data dummy |
+| Kelola akun, rekap CSV | Belum ada |
 
 ## 13. Referensi
 

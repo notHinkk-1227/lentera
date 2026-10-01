@@ -1,6 +1,7 @@
 import { CheckCircle2, XCircle } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { VerificationQueueList } from "@/components/dashboard/VerificationQueueList";
+import { requireRole } from "@/lib/authz";
 import { dummyPendingQueue } from "@/lib/dummy-data";
 
 // TODO: ganti dummyPendingQueue dengan articleService.getPendingQueue()
@@ -10,6 +11,7 @@ export default async function AdminQueuePage({
 }: {
   searchParams: Promise<{ reviewed?: string }>;
 }) {
+  await requireRole("ADMIN");
   const { reviewed } = await searchParams;
 
   return (
