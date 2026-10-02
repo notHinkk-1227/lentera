@@ -17,35 +17,26 @@ export function AuthorChips({ authors }: { authors: DetailAuthor[] }) {
   return (
     <section>
       <SectionHeading>Penulis</SectionHeading>
-      <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+      <ul className="mt-5 grid gap-x-8 gap-y-5 sm:grid-cols-2">
         {authors.map((author) => {
           const isInternal = author.type !== "EKSTERNAL";
-          const subtitle = [AUTHOR_TYPE_LABEL[author.type], author.affiliation].filter(Boolean).join(" · ");
+          const subtitle = [AUTHOR_TYPE_LABEL[author.type], author.affiliation].filter(Boolean).join(", ");
           return (
-            <li
-              key={`${author.name}-${author.type}`}
-              className="flex items-center gap-3 rounded-lg border border-white/10 bg-white/[0.03] p-3"
-            >
+            <li key={`${author.name}-${author.type}`} className="flex items-center gap-3.5">
               <span
                 aria-hidden
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
                   isInternal ? "bg-[#E5493A]/20 text-[#FF8A7D]" : "bg-white/10 text-white/60"
                 }`}
               >
                 {initials(author.name)}
               </span>
               <div className="min-w-0">
-                <p className="flex flex-wrap items-center gap-x-2 text-sm font-medium text-white">
-                  {author.name}
-                  {author.corresponding ? (
-                    <span className="rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-normal text-white/60">
-                      Korespondensi
-                    </span>
-                  ) : null}
-                </p>
-                <p className="truncate text-xs text-white/50" title={subtitle}>
-                  {subtitle}
-                </p>
+                <p className="text-[15px] font-medium leading-snug text-white">{author.name}</p>
+                <p className="mt-0.5 text-sm leading-snug text-white/50">{subtitle}</p>
+                {author.corresponding ? (
+                  <p className="mt-1 text-xs text-[#FF8A7D]">Penulis korespondensi</p>
+                ) : null}
               </div>
             </li>
           );

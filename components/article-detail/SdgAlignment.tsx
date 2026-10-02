@@ -12,18 +12,18 @@ export function SdgAlignment({ sdgs }: { sdgs: number[] }) {
   return (
     <section>
       <SectionHeading>Keselarasan SDG</SectionHeading>
-      <ul className="mt-4 flex flex-wrap gap-4">
+      <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-5">
         {items.map((sdg) => (
-          <li key={sdg.number} title={`SDG ${sdg.number}: ${sdg.name}`} className="w-24">
+          <li key={sdg.number} title={`SDG ${sdg.number}: ${sdg.name}`} className="w-[88px]">
             <Image
               src={`/images/sdg/sdg-${String(sdg.number).padStart(2, "0")}.png`}
               alt={`SDG ${sdg.number}: ${sdg.name}`}
-              width={96}
-              height={96}
+              width={88}
+              height={88}
               unoptimized
-              className="h-24 w-24 rounded-md shadow-lg shadow-black/40"
+              className="h-[88px] w-[88px] rounded-md"
             />
-            <p className="mt-2 text-center text-[11px] leading-tight text-white/60">{sdg.shortName}</p>
+            <p className="mt-2 text-xs leading-tight text-white/60">{sdg.shortName}</p>
           </li>
         ))}
       </ul>

@@ -25,11 +25,14 @@ export function NetflixArticleCover({
   theme,
   badge,
   abstract,
+  hideTitle = false,
 }: {
   title: string;
   theme: CoverThemeKey;
   badge?: string | null;
   abstract?: string;
+  /** Sembunyikan judul di cover, mis. di halaman detail yang sudah menampilkan judul sebagai H1. */
+  hideTitle?: boolean;
 }) {
   const config = NETFLIX_COVER_THEMES[theme];
   const Icon = ICONS[config.icon];
@@ -50,13 +53,17 @@ export function NetflixArticleCover({
         style={{ objectPosition: image.position }}
       />
 
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 38%, rgba(0,0,0,0) 65%)",
-        }}
-      />
+      {/* Gradasi gelap hanya untuk menjaga keterbacaan judul di cover. Tanpa judul
+          (halaman detail) gradasi dibuang supaya tidak ada pita gelap kosong di bawah. */}
+      {hideTitle ? null : (
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 38%, rgba(0,0,0,0) 65%)",
+          }}
+        />
+      )}
 
       <div className="absolute inset-0 flex flex-col justify-between p-3">
         <div className="flex items-start justify-between gap-2">
@@ -69,13 +76,15 @@ export function NetflixArticleCover({
             </span>
           ) : null}
         </div>
-        <p
-          className={`line-clamp-4 text-[13px] font-medium leading-snug text-white ${
-            abstract ? "transition-opacity duration-200 group-hover:opacity-0 group-focus-visible:opacity-0" : ""
-          }`}
-        >
-          {title}
-        </p>
+        {hideTitle ? null : (
+          <p
+            className={`line-clamp-4 text-[13px] font-medium leading-snug text-white ${
+              abstract ? "transition-opacity duration-200 group-hover:opacity-0 group-focus-visible:opacity-0" : ""
+            }`}
+          >
+            {title}
+          </p>
+        )}
       </div>
 
       {abstract ? (
