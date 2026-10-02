@@ -251,7 +251,7 @@ Identitas: **LENTERA** dengan sub-judul "Layanan Eksplorasi Penelitian, Teknolog
 
 Prinsip: terinspirasi pola interaksi Netflix (hero, baris horizontal, kartu bercover), tetap kredibel dan informatif. Search bar selalu menjadi elemen utama.
 
-Homepage utama (`/`) memakai varian **LENTERA gelap**: latar gelap, aksen merah, hero gambar, baris Top 10, dan hover card. Varian formal-akademik (latar kertas hangat, aksen brass, tipografi serif) sudah dihapus dari kode (keputusan 11.1, 2 Oktober 2026). Halaman `/search` dan `/articles/[id]` masih memakai tema terang dan perlu diseragamkan dengan homepage.
+Homepage utama (`/`) memakai varian **LENTERA gelap**: latar gelap, aksen merah, hero gambar, baris Top 10, dan hover card. Varian formal-akademik (latar kertas hangat, aksen brass, tipografi serif) sudah dihapus dari kode (keputusan 11.1, 2 Oktober 2026). Halaman `/search` masih memakai tema terang dan perlu diseragamkan dengan homepage; `/articles/[id]` sudah gelap.
 
 **Cover:** gambar pixel art per bidang keilmuan, dipilih deterministik dari hash judul, dengan ikon dan judul di atasnya; dosen dapat mengunggah cover sendiri.
 
@@ -276,7 +276,7 @@ Homepage utama (`/`) memakai varian **LENTERA gelap**: latar gelap, aksen merah,
 
 | # | Pertanyaan | Rekomendasi |
 |---|---|---|
-| 11.1 | Homepage utama: formal atau LENTERA gelap? | **Diputuskan (2 Okt 2026): LENTERA gelap menjadi `/`; homepage formal dihapus.** Tersisa: `/search` dan `/articles/[id]` masih terang dan perlu diseragamkan |
+| 11.1 | Homepage utama: formal atau LENTERA gelap? | **Diputuskan (2 Okt 2026): LENTERA gelap menjadi `/`; homepage formal dihapus.** Tersisa: `/search` masih terang dan perlu diseragamkan (`/articles/[id]` sudah gelap) |
 | 11.2 | Setelah `REJECTED`, revisi atau unggah baru? | Revisi + kirim ulang (`FR-VERIF-04`) |
 | 11.5 | Hosting Vercel vs server kampus | Cek kebijakan PUSKOM/IT Widyatama |
 | 11.6 | Notifikasi email hasil verifikasi | Tunda ke fase lanjutan |
