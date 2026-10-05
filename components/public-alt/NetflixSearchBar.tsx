@@ -4,13 +4,11 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-// Catatan: hasil pencarian tetap mengarah ke /search (versi terang/akademik) —
-// halaman search belum punya versi gelap sendiri. Ini sudah cukup untuk
-// membandingkan ARAH DESAIN homepage; kalau tema gelap ini disetujui klien,
-// /search perlu dibuatkan versi gelap juga di tahap berikutnya.
-export function NetflixSearchBar() {
+// Dipakai di homepage (kosong) dan di /search (terisi kata kunci yang sedang dicari).
+// Hasil pencarian selalu mengarah ke /search.
+export function NetflixSearchBar({ defaultValue = "" }: { defaultValue?: string }) {
   const router = useRouter();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(defaultValue);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

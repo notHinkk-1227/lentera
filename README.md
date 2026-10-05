@@ -80,7 +80,7 @@ Kata sandi ini hanya untuk database lokal. Jangan pernah dipakai di staging atau
 app/
   page.tsx             homepage utama (/), bertema gelap, memakai header dan footer sendiri
   articles/[id]/       detail karya (/articles/[id]), bertema gelap, memakai header dan footer homepage
-  (public)/            pencarian (/search), masih memakai PublicHeader terang
+  (public)/            pencarian (/search); layout gelap dengan header dan footer yang sama dengan homepage
   (dashboard)/
     admin/             antrean verifikasi, review karya, kelola fakultas & kategori
     dosen/             ringkasan, karya saya, unggah karya
@@ -132,7 +132,7 @@ Diperbarui 2 Oktober 2026. Untuk status terhadap tiap kebutuhan produk, lihat ba
 - [ ] Skema belum punya SDG, penulis majemuk, dan field DOI/Scopus/Scholar
 - [ ] MAESTRO, kelola akun, rekap CSV, filter roadmap
 - [ ] Pencarian kata kunci: baru cocok penuh (huruf besar/kecil diabaikan), belum cocok sebagian
-- [ ] `/search` masih bertema terang, belum seragam dengan homepage gelap (`/articles/[id]` sudah gelap)
+- [x] `/search` sudah bertema gelap dan seragam dengan homepage dan `/articles/[id]`
 
 ## Jadwal
 

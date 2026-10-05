@@ -16,8 +16,8 @@ import {
 
 // Homepage utama LENTERA (/), bertema gelap dengan pola interaksi ala Netflix:
 // hero karya unggulan, pencarian, filter fakultas, carousel, dan baris Top 6.
-// Header dan footer-nya sendiri (components/public-alt), jadi halaman ini berada di luar
-// grup (public) yang memakai PublicHeader terang.
+// Header dan footer yang sama dipakai grup (public) lewat app/(public)/layout.tsx, supaya
+// halaman publik lain (mis. /search) seragam dengan homepage ini.
 // TODO: ganti data dummy dengan articleService.getHomepageSections() begitu database aktif.
 export default function HomePage() {
   return (

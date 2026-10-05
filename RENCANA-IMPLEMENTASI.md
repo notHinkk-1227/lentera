@@ -66,7 +66,7 @@
 **Selesai bila:** permintaan data terkirim; backlog tersedia; ada angka biaya kasar untuk dibandingkan.
 
 #### Rabu 30 Sep — Ganti nama ke LENTERA
-- [ ] Ganti nama tampil di `app/layout.tsx` (metadata), `app/login/page.tsx`, `PublicHeader`, `NetflixFooter` (isi "Universitas Widyatama"), dan sidebar (2 j)
+- [ ] Ganti nama tampil di `app/layout.tsx` (metadata), `app/login/page.tsx`, `NetflixHeader`, `NetflixFooter` (isi "Universitas Widyatama"), dan sidebar (2 j)
 - [ ] Ubah `name` di `package.json`, `README.md`, judul di `CLAUDE.md` (1 j)
 - [ ] Tampilkan "LENTERA" beserta kepanjangannya di halaman login dan footer (1 j)
 - [ ] Letakkan `PRD.md` dan folder `referensi/` berdampingan di repo; commit `chore: ganti nama ke LENTERA` (2 j)
