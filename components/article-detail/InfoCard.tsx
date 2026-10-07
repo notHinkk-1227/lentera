@@ -1,4 +1,4 @@
-import { WORK_TYPE_LABEL, type PublicArticleDetail } from "@/lib/dummy-article-detail";
+import { WORK_TYPE_LABEL, type PublicArticleDetail } from "@/lib/article-detail";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });

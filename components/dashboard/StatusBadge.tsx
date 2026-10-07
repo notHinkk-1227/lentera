@@ -1,4 +1,4 @@
-import type { ArticleStatus } from "@/lib/dummy-data";
+import type { ArticleStatus } from "@/lib/types";
 
 const STATUS_CONFIG: Record<ArticleStatus, { label: string; textClass: string; bgClass: string }> = {
   PUBLISHED: {

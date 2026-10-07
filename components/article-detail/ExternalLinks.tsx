@@ -1,5 +1,5 @@
 import { ExternalLink } from "lucide-react";
-import { getDoiUrl, getScholarUrl, type PublicArticleDetail } from "@/lib/dummy-article-detail";
+import { getDoiUrl, getScholarUrl, type PublicArticleDetail } from "@/lib/article-detail";
 
 const LINK_CLASS =
   "inline-flex items-center gap-1.5 rounded-md border border-white/20 px-3 py-2 text-sm text-white/85 transition-colors hover:border-white/40 hover:bg-white/10 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white/60";

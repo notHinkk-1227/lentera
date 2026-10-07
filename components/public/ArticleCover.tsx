@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Zap, TrendingUp, HeartPulse, Brain, Scale, Cpu, type LucideIcon } from "lucide-react";
-import { COVER_THEMES, type CoverThemeKey } from "@/lib/dummy-data";
+import { COVER_THEMES, type CoverThemeKey } from "@/lib/types";
 import { getCoverImage } from "@/lib/cover-images";
 
 const ICONS: Record<string, LucideIcon> = {

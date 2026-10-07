@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Download, Handshake, MapPin } from "lucide-react";
 import { NetflixHeader } from "@/components/public-alt/NetflixHeader";
@@ -16,23 +17,24 @@ import { SdgAlignment } from "@/components/article-detail/SdgAlignment";
 import { SectionHeading } from "@/components/article-detail/SectionHeading";
 import { ShareButton } from "@/components/article-detail/ShareButton";
 import { SimilarWorks } from "@/components/article-detail/SimilarWorks";
-import {
-  REGION_LABEL,
-  WORK_TYPE_LABEL,
-  getArticleDetail,
-  getSimilarArticles,
-} from "@/lib/dummy-article-detail";
+import { REGION_LABEL, WORK_TYPE_LABEL } from "@/lib/article-detail";
+import { articleService } from "@/lib/services/articleService";
+
+// generateMetadata dan halaman memanggil data yang sama; cache() membuatnya satu kali query per request.
+const getDetail = cache((id: string) => articleService.getPublicArticleDetail(id));
 
 // Meta tag untuk crawler Google Scholar (FR-EXT-05, NFR-SEO-01).
-// `citation_pdf_url` belum ada karena berkas PDF belum disajikan lewat URL publik.
+// `citation_pdf_url` belum ada: PDF disajikan lewat /api/articles/[id]/download yang menghitung
+// unduhan, jadi tidak dipasang sebagai URL untuk crawler.
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id } = await params;
-  const article = getArticleDetail(id);
-  if (!article) return { title: "Karya tidak ditemukan" };
+  const detail = await getDetail(id);
+  if (!detail) return { title: "Karya tidak ditemukan" };
+  const { article } = detail;
 
   return {
     title: article.title,
@@ -46,22 +48,23 @@ export async function generateMetadata({
   };
 }
 
-// TODO: ganti getArticleDetail/getSimilarArticles (dummy) dengan articleService.getArticleDetail(id)
-// begitu database aktif. Karya non-PUBLISHED harus menghasilkan 404 (FR-PUB-06).
-// Tombol "Unduh PDF" baru diaktifkan setelah endpoint unduh ada (menambah downloadCount, FR-PUB-05).
+// Karya non-PUBLISHED menghasilkan 404 (FR-PUB-06). Tombol "Unduh PDF" memanggil
+// /api/articles/[id]/download yang menambah downloadCount (FR-PUB-05).
+export const dynamic = "force-dynamic";
+
 export default async function ArticleDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const article = getArticleDetail(id);
+  const detail = await getDetail(id);
 
-  if (!article) {
+  if (!detail) {
     notFound();
   }
 
-  const similar = getSimilarArticles(article);
+  const { article, similar } = detail;
   const isPkm = article.type === "PKM";
   const authorLine = article.authors.map((author) => author.name).join(", ");
   const coverImage = getCoverImage(article.coverTheme, article.title);
@@ -121,22 +124,15 @@ export default async function ArticleDetailPage({
                 <p className="mt-0.5 text-sm text-white/55">{article.facultyName}</p>
 
                 <div className="mt-6 flex flex-wrap items-center gap-2.5">
-                  {/* Belum berfungsi: endpoint unduh PDF belum ada (FR-PUB-05). Tombol dinonaktifkan
-                      agar tidak ada tombol yang tampil tetapi tidak bekerja (NFR-A11Y-01). */}
-                  <button
-                    type="button"
-                    disabled
-                    aria-describedby="unduh-catatan"
-                    className="inline-flex items-center gap-2 rounded-md border border-white/15 px-4 py-2 text-sm font-medium text-white/40 disabled:cursor-not-allowed"
+                  <a
+                    href={`/api/articles/${article.id}/download`}
+                    className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-white/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                   >
                     <Download className="h-4 w-4" strokeWidth={1.75} />
                     Unduh PDF
-                  </button>
+                  </a>
                   <ExternalLinks article={article} />
                 </div>
-                <p id="unduh-catatan" className="mt-2.5 text-xs text-white/40">
-                  Unduhan PDF segera tersedia.
-                </p>
               </div>
             </div>
           </section>

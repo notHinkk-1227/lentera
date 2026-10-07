@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { WORK_TYPE_LABEL, type SimilarArticle } from "@/lib/dummy-article-detail";
+import { WORK_TYPE_LABEL, type SimilarArticle } from "@/lib/article-detail";
 
 // "Karya serupa". Berbeda dari referensi, tidak ada persentase kemiripan: yang ditampilkan
 // adalah alasannya (topik roadmap, SDG, kata kunci, kategori).

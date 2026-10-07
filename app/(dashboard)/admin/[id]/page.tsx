@@ -5,7 +5,7 @@ import { ArticleCover } from "@/components/public/ArticleCover";
 import { PdfPreviewPlaceholder } from "@/components/dashboard/PdfPreviewPlaceholder";
 import { ArticleReviewActions } from "@/components/dashboard/ArticleReviewActions";
 import { requireRole } from "@/lib/authz";
-import { getQueuedArticleById } from "@/lib/dummy-data";
+import { articleService } from "@/lib/services/articleService";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("id-ID", {
@@ -15,8 +15,6 @@ function formatDate(iso: string) {
   });
 }
 
-// TODO: ganti getQueuedArticleById(dummy) dengan articleService.getArticleDetail(id)
-// begitu backend & database aktif.
 export default async function AdminArticleReviewPage({
   params,
 }: {
@@ -24,7 +22,7 @@ export default async function AdminArticleReviewPage({
 }) {
   await requireRole("ADMIN");
   const { id } = await params;
-  const article = getQueuedArticleById(id);
+  const article = await articleService.getArticleForReview(id);
 
   if (!article) {
     notFound();

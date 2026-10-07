@@ -1,4 +1,4 @@
-import { AUTHOR_TYPE_LABEL, type DetailAuthor } from "@/lib/dummy-article-detail";
+import { AUTHOR_TYPE_LABEL, type DetailAuthor } from "@/lib/article-detail";
 import { SectionHeading } from "@/components/article-detail/SectionHeading";
 
 // Inisial untuk avatar: gelar (Prof., Dr., Ir., dst.) dibuang supaya "Dr. Andi Wijaya" jadi "AW".

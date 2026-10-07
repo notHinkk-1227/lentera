@@ -1,4 +1,4 @@
-import type { CoverThemeKey } from "@/lib/dummy-data";
+import type { CoverThemeKey } from "@/lib/types";
 
 // Palet TERPISAH dari COVER_THEMES di components/public/ArticleCover.tsx.
 // Sengaja lebih jenuh/vivid (bukan muted-akademik) untuk arah "poster film"

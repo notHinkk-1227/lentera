@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FileText, Info } from "lucide-react";
 import { NETFLIX_COVER_THEMES } from "@/components/public-alt/NetflixCoverThemes";
 import { getHeroImage } from "@/lib/cover-images";
-import type { PublicArticle } from "@/lib/dummy-data";
+import type { PublicArticle } from "@/lib/types";
 
 function formatYear(iso: string) {
   return new Date(iso).getFullYear();

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Download } from "lucide-react";
 import { NetflixArticleCover } from "@/components/public-alt/NetflixArticleCover";
-import type { PublicArticle } from "@/lib/dummy-data";
+import type { PublicArticle } from "@/lib/types";
 
 // Kartu hasil di /search. Cover-nya sama dengan kartu di homepage; `group` pada Link
 // memicu efek hover cover.

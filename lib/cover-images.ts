@@ -10,7 +10,7 @@
 // - Cover: rasio ~3:4 (potret), sudah diskalakan 2x dari resolusi pixel-art asli.
 // - Hero: rasio ~12:5 (lebar), resolusi pixel-art asli — di-render dengan
 //   image-rendering: pixelated supaya tetap tajam saat diperbesar.
-import type { CoverThemeKey } from "@/lib/dummy-data";
+import type { CoverThemeKey } from "@/lib/types";
 
 export type CoverImage = {
   src: string;

@@ -16,13 +16,37 @@
 // PERINGATAN: password "password123" HANYA untuk development lokal.
 // Jangan pernah dipakai di staging atau production.
 
-import { PrismaClient, Role, ArticleStatus, WorkType, Region } from "@prisma/client";
+import { PrismaClient, Role, ArticleStatus, WorkType, Region, AuthorType } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { seedRoadmap } from "./seed-roadmap";
+import { SDGS } from "../lib/sdg";
 
 const prisma = new PrismaClient();
 
 const DEV_PASSWORD = "password123";
+
+// PDF contoh satu halaman, ditulis ke folder unggahan lokal (sama dengan LocalStorage di
+// lib/storage) agar tombol "Unduh PDF" bisa dicoba tanpa berkas asli.
+const SEED_PDF_KEY = "seed/placeholder.pdf";
+const SEED_PDF_URL = `local:${SEED_PDF_KEY}`;
+
+function writeSeedPdf() {
+  const stream = "BT /F1 14 Tf 20 70 Td (Berkas contoh LENTERA) Tj ET";
+  const pdf =
+    "%PDF-1.4\n" +
+    "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
+    "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n" +
+    "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 144]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n" +
+    `4 0 obj<</Length ${stream.length}>>stream\n${stream}\nendstream endobj\n` +
+    "5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n" +
+    "trailer<</Root 1 0 R>>\n%%EOF\n";
+  const root = path.resolve(process.env.UPLOAD_DIR ?? path.join(process.cwd(), ".uploads"));
+  const full = path.join(root, SEED_PDF_KEY);
+  mkdirSync(path.dirname(full), { recursive: true });
+  writeFileSync(full, pdf, "latin1");
+}
 
 interface ArticleSeed {
   title: string;
@@ -31,7 +55,9 @@ interface ArticleSeed {
   year: number;
   status: ArticleStatus;
   rejectedNote?: string;
-  author: string; // nama dosen (harus ada di dosenSeed)
+  author: string; // nama dosen pengunggah (harus ada di dosenSeed); otomatis jadi penulis pertama
+  coAuthors?: { name: string; type: AuthorType; affiliation?: string }[]; // penulis tambahan, berurutan
+  sdgs?: number[]; // nomor SDG (1–17)
   faculty: string;
   categories: string[];
   downloadCount: number;
@@ -48,6 +74,8 @@ const articlesSeed: ArticleSeed[] = [
   // ===== RISET — terbit =====
   {
     title: "Dampak Digitalisasi terhadap Produktivitas UMKM di Jawa Barat",
+    sdgs: [8, 9],
+    coAuthors: [{ name: "Rizky Pratama", type: AuthorType.MAHASISWA, affiliation: "Manajemen" }, { name: "Dewi Anggraeni", type: AuthorType.MAHASISWA, affiliation: "Manajemen" }],
     abstract:
       "Studi ini mengkaji korelasi antara adopsi platform digital dan pertumbuhan omzet pelaku UMKM, dengan sampel 240 responden di lima kabupaten.",
     keywords: ["digitalisasi", "UMKM", "produktivitas", "ekonomi digital"],
@@ -63,6 +91,8 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Analisis Efisiensi Energi Terbarukan pada Sistem Panel Surya Terdistribusi",
+    sdgs: [7, 13],
+    coAuthors: [{ name: "Farhan Maulana", type: AuthorType.MAHASISWA, affiliation: "Teknik Elektro" }, { name: "Prof. Hiroshi Tanaka", type: AuthorType.EKSTERNAL, affiliation: "Kyushu University" }],
     abstract:
       "Mengkaji efisiensi konversi energi pada sistem panel surya terdistribusi di wilayah tropis.",
     keywords: ["energi terbarukan", "panel surya", "efisiensi"],
@@ -78,6 +108,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Penanganan Stunting di Daerah Pesisir: Studi Kasus Multisektor",
+    sdgs: [2, 3],
     abstract:
       "Meninjau efektivitas intervensi multisektor dalam penanganan stunting di wilayah pesisir.",
     keywords: ["stunting", "kesehatan pesisir", "intervensi multisektor"],
@@ -93,6 +124,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Kebijakan Hukum Lingkungan Pesisir dalam Perspektif Otonomi Daerah",
+    sdgs: [14, 16],
     abstract:
       "Menganalisis efektivitas kebijakan hukum lingkungan pesisir pasca desentralisasi.",
     keywords: ["hukum lingkungan", "otonomi daerah", "pesisir"],
@@ -107,6 +139,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Penerapan Blockchain untuk Transparansi Akuntansi Publik di Pemerintah Daerah",
+    sdgs: [9, 16],
     abstract:
       "Mengevaluasi kelayakan pencatatan transaksi berbasis blockchain untuk meningkatkan transparansi dan akuntabilitas pelaporan keuangan pemerintah daerah.",
     keywords: ["blockchain", "akuntansi publik", "transparansi", "tata kelola"],
@@ -122,6 +155,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Digitalisasi Budaya Lokal Sunda melalui Augmented Reality untuk Media Belajar",
+    sdgs: [4, 11],
     abstract:
       "Merancang dan menguji media belajar berbasis augmented reality yang memperkenalkan aksara dan kesenian Sunda kepada siswa sekolah menengah.",
     keywords: ["augmented reality", "budaya Sunda", "media belajar", "digitalisasi budaya"],
@@ -137,6 +171,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Prediksi Beban Listrik Berbasis Pembelajaran Mesin untuk Jaringan Mikro",
+    sdgs: [7, 9],
     abstract:
       "Membandingkan model pembelajaran mesin untuk memprediksi beban listrik jangka pendek pada jaringan mikro dengan pembangkit surya.",
     keywords: ["pembelajaran mesin", "beban listrik", "jaringan mikro"],
@@ -151,6 +186,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Evaluasi Implementasi ESG pada Lembaga Keuangan Mikro",
+    sdgs: [8, 12],
     abstract:
       "Menilai tingkat penerapan prinsip lingkungan, sosial, dan tata kelola pada lembaga keuangan mikro serta kaitannya dengan kinerja keberlanjutan.",
     keywords: ["ESG", "keuangan mikro", "keberlanjutan"],
@@ -168,6 +204,7 @@ const articlesSeed: ArticleSeed[] = [
   // ===== PKM — terbit (kelanjutan dari riset di atas) =====
   {
     title: "Pelatihan Literasi Digital bagi Pelaku UMKM Desa Binaan di Kabupaten Bandung Barat",
+    sdgs: [4, 8],
     abstract:
       "Program pelatihan pemasaran digital dan pencatatan usaha bagi 40 pelaku UMKM desa binaan, dilanjutkan pendampingan selama tiga bulan.",
     keywords: ["literasi digital", "UMKM", "pendampingan", "desa binaan"],
@@ -186,6 +223,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Edukasi Panel Surya Skala Rumah Tangga bagi Masyarakat Kelurahan Binaan",
+    sdgs: [4, 7],
     abstract:
       "Penyuluhan dan demonstrasi pemasangan panel surya skala rumah tangga, termasuk simulasi penghematan biaya listrik bagi warga.",
     keywords: ["energi terbarukan", "panel surya", "edukasi masyarakat"],
@@ -206,6 +244,7 @@ const articlesSeed: ArticleSeed[] = [
   // ===== Menunggu verifikasi — untuk menguji halaman /admin =====
   {
     title: "Optimalisasi Jaringan Sensor Nirkabel untuk Pemantauan Kualitas Udara",
+    sdgs: [11, 13],
     abstract:
       "Studi ini mengusulkan skema penempatan sensor nirkabel yang optimal untuk pemantauan kualitas udara perkotaan menggunakan algoritma optimasi berbasis graf.",
     keywords: ["sensor nirkabel", "kualitas udara", "IoT"],
@@ -220,6 +259,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Pengaruh Literasi Keuangan terhadap Perilaku Menabung Generasi Z",
+    sdgs: [4, 8],
     abstract:
       "Penelitian ini menganalisis hubungan antara tingkat literasi keuangan dan perilaku menabung pada generasi Z di perkotaan menggunakan pendekatan survei kuantitatif.",
     keywords: ["literasi keuangan", "generasi Z", "perilaku menabung"],
@@ -235,6 +275,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Implementasi Kurikulum Merdeka Belajar pada Sekolah Menengah Kejuruan",
+    sdgs: [4, 8],
     abstract:
       "Penelitian ini mengevaluasi tantangan dan strategi implementasi Kurikulum Merdeka Belajar di sekolah menengah kejuruan berdasarkan perspektif guru dan siswa.",
     keywords: ["kurikulum merdeka", "SMK", "evaluasi pendidikan"],
@@ -249,6 +290,7 @@ const articlesSeed: ArticleSeed[] = [
   },
   {
     title: "Pendampingan Laporan Keuangan Digital bagi Koperasi Warga",
+    sdgs: [1, 8],
     abstract:
       "Pendampingan penggunaan aplikasi pencatatan keuangan sederhana bagi pengurus koperasi warga, meliputi pelatihan dan evaluasi penggunaan selama dua bulan.",
     keywords: ["keuangan digital", "koperasi", "pendampingan"],
@@ -268,6 +310,7 @@ const articlesSeed: ArticleSeed[] = [
   // ===== Ditolak — untuk menguji tampilan REJECTED di dashboard dosen =====
   {
     title: "Evaluasi Ketahanan Material Komposit terhadap Beban Siklik",
+    sdgs: [9, 12],
     abstract:
       "Studi eksperimental mengenai ketahanan material komposit serat karbon terhadap pembebanan siklik jangka panjang.",
     keywords: ["material komposit", "beban siklik", "serat karbon"],
@@ -303,11 +346,32 @@ const categoryNames = [
   "Metodologi Penelitian",
 ];
 
+// Cari penulis non-akun (mahasiswa/eksternal) berdasarkan nama+tipe; buat bila belum ada.
+async function findOrCreateAuthor(name: string, type: AuthorType, affiliation?: string) {
+  const existing = await prisma.author.findFirst({ where: { name, type, userId: null } });
+  return (
+    existing ??
+    prisma.author.create({ data: { name, type, affiliation: affiliation ?? null } })
+  );
+}
+
 async function main() {
   const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
+  writeSeedPdf();
 
   // --- Roadmap (harus lebih dulu: karya contoh menautkan ke topik roadmap) -----
   await seedRoadmap(prisma);
+
+  // --- SDG (17 tujuan; migrasi juga mengisinya, upsert ini menjaga namanya tetap sinkron) --
+  await Promise.all(
+    SDGS.map((sdg) =>
+      prisma.sdg.upsert({
+        where: { number: sdg.number },
+        update: { name: sdg.name, shortName: sdg.shortName },
+        create: { number: sdg.number, name: sdg.name, shortName: sdg.shortName },
+      }),
+    ),
+  );
 
   // --- Fakultas ----------------------------------------------------------------
   const faculties = await Promise.all(
@@ -355,6 +419,29 @@ async function main() {
   );
   const dosenByName = Object.fromEntries(dosenUsers.map((u) => [u.name, u]));
 
+  // Profil penulis tiap dosen (terhubung ke akun, afiliasi = fakultas).
+  const authorByDosen = new Map<string, string>();
+  for (const d of dosenSeed) {
+    const user = dosenByName[d.name];
+    const author = await prisma.author.upsert({
+      where: { userId: user.id },
+      update: { name: d.name, affiliation: d.faculty },
+      create: { name: d.name, type: AuthorType.DOSEN, affiliation: d.faculty, userId: user.id },
+    });
+    authorByDosen.set(d.name, author.id);
+  }
+
+  // Daftar penulis berurutan sebuah karya: pengunggah dulu (korespondensi), lalu coAuthors.
+  async function buildAuthorLinks(a: ArticleSeed) {
+    const links = [{ authorId: authorByDosen.get(a.author)!, position: 1, corresponding: true }];
+    for (const [i, co] of (a.coAuthors ?? []).entries()) {
+      const author = await findOrCreateAuthor(co.name, co.type, co.affiliation);
+      links.push({ authorId: author.id, position: i + 2, corresponding: false });
+    }
+    return links;
+  }
+  const sdgLinks = (a: ArticleSeed) => (a.sdgs ?? []).map((sdgNumber) => ({ sdgNumber }));
+
   // --- Karya -------------------------------------------------------------------
   // Slug roadmap dicek lebih dulu agar salah ketik langsung ketahuan dengan pesan jelas.
   const topicIdBySlug = new Map<string, string>();
@@ -396,9 +483,26 @@ async function main() {
     if (existing) {
       // Hanya tautan taksonomi yang diperbarui; status/unduhan tidak ditimpa
       // supaya hasil uji verifikasi di lokal tidak hilang saat seed diulang.
+      // fileUrl hanya diganti bila masih placeholder lama (example.com), bukan unggahan sungguhan.
+      const isOldPlaceholder = existing.fileUrl.startsWith("https://example.com");
       await prisma.article.update({
         where: { id: existing.id },
-        data: { ...taxonomy, themes: { set: themeRefs }, pkmFocusAreas: { set: focusRefs } },
+        data: {
+          ...(isOldPlaceholder ? { fileUrl: SEED_PDF_URL } : {}),
+          ...taxonomy,
+          themes: { set: themeRefs },
+          pkmFocusAreas: { set: focusRefs },
+        },
+      });
+      // SDG dan penulis disinkronkan ulang dari seed (tidak menyentuh unggahan sungguhan di
+      // luar daftar seed karena pencocokan memakai judul).
+      await prisma.articleSdg.deleteMany({ where: { articleId: existing.id } });
+      await prisma.articleSdg.createMany({
+        data: sdgLinks(a).map((l) => ({ articleId: existing.id, ...l })),
+      });
+      await prisma.articleAuthor.deleteMany({ where: { articleId: existing.id } });
+      await prisma.articleAuthor.createMany({
+        data: (await buildAuthorLinks(a)).map((l) => ({ articleId: existing.id, ...l })),
       });
       articleIdByTitle.set(a.title, existing.id);
       updated++;
@@ -413,15 +517,27 @@ async function main() {
         year: a.year,
         status: a.status,
         rejectedNote: a.rejectedNote ?? null,
-        fileUrl: "https://example.com/placeholder.pdf", // TODO: ganti begitu storage aktif
+        fileUrl: SEED_PDF_URL,
         downloadCount: a.downloadCount,
         // Tanggal terbit berselang satu hari per karya agar urutan "Artikel terbaru" stabil.
         publishedAt:
           a.status === ArticleStatus.PUBLISHED
             ? new Date(Date.now() - index * 24 * 60 * 60 * 1000)
             : null,
-        ...taxonomy,
-        author: { connect: { id: dosenByName[a.author].id } },
+        // Mode "checked" (karena ada uploader/faculty connect): relasi memakai nested connect,
+        // bukan scalar FK roadmapTopicId/sourceResearchId.
+        type: taxonomy.type,
+        region: taxonomy.region,
+        partner: taxonomy.partner,
+        ...(taxonomy.roadmapTopicId
+          ? { roadmapTopic: { connect: { id: taxonomy.roadmapTopicId } } }
+          : {}),
+        ...(taxonomy.sourceResearchId
+          ? { sourceResearch: { connect: { id: taxonomy.sourceResearchId } } }
+          : {}),
+        uploader: { connect: { id: dosenByName[a.author].id } },
+        authors: { create: await buildAuthorLinks(a) },
+        sdgs: { create: sdgLinks(a) },
         faculty: { connect: { id: facultyByName[a.faculty].id } },
         categories: {
           create: a.categories.map((categoryName) => ({
@@ -438,7 +554,7 @@ async function main() {
 
   const countBy = (pred: (a: ArticleSeed) => boolean) => articlesSeed.filter(pred).length;
   console.log("Seed selesai.");
-  console.log(`- ${faculties.length} fakultas, ${categories.length} kategori`);
+  console.log(`- ${faculties.length} fakultas, ${categories.length} kategori, ${SDGS.length} SDG`);
   console.log(`- ${dosenUsers.length} akun dosen + 1 akun admin (password: ${DEV_PASSWORD})`);
   console.log(
     `- ${articlesSeed.length} karya (${created} baru, ${updated} diperbarui): ` +

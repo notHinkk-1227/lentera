@@ -6,6 +6,7 @@
 import { redirect } from "next/navigation";
 import type { Role } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import { userRepository } from "@/lib/repositories/userRepository";
 
 // Halaman utama tiap peran. Dipakai untuk mengarahkan pengguna yang salah area.
 export const ROLE_HOME: Record<Role, string> = {
@@ -14,12 +15,17 @@ export const ROLE_HOME: Record<Role, string> = {
 };
 
 // Pastikan pengguna sudah login dan berperan `role`.
-// - Belum login          -> /login
+// - Belum login / akun nonaktif -> /login
 // - Login, peran berbeda -> beranda perannya sendiri (mis. dosen buka /admin -> /dosen)
 export async function requireRole(role: Role) {
   const session = await auth();
 
   if (!session?.user) {
+    redirect("/login");
+  }
+
+  // Sesi JWT tidak ikut dicabut saat akun dinonaktifkan, jadi cek ulang di sini (FR-AUTH-04).
+  if (!(await userRepository.isActive(session.user.id))) {
     redirect("/login");
   }
 

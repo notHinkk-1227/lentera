@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Download } from "lucide-react";
 import { NetflixArticleCover } from "@/components/public-alt/NetflixArticleCover";
-import type { PublicArticle } from "@/lib/dummy-data";
+import type { PublicArticle } from "@/lib/types";
 
 function getBadge(article: PublicArticle) {
   if (article.year >= 2026) return "Baru";

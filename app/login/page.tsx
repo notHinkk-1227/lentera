@@ -2,6 +2,9 @@ import Link from "next/link";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { LoginShowcasePanel } from "@/components/auth/LoginShowcasePanel";
 
+// Panel showcase membaca karya terbit dari database, jadi tidak boleh di-prerender saat build.
+export const dynamic = "force-dynamic";
+
 export default function LoginPage() {
   return (
     <div className="grid h-screen overflow-hidden bg-paper lg:grid-cols-2">

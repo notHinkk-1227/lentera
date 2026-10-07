@@ -1,41 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Plus, X } from "lucide-react";
+import type { NamedItem } from "@/lib/types";
 
-export type NamedItem = { id: string; name: string };
+export type { NamedItem };
 
-// TODO: ganti simulasi state lokal ini dengan panggilan ke API
-// (mis. POST/DELETE /api/faculties, /api/categories) begitu backend aktif.
-// Saat ini add/delete cuma mengubah state di browser, tidak persisten.
+type ActionResult = { error?: string };
+
+// Daftar mengikuti `items` dari server: setelah action selesai, halaman di-revalidate dan
+// props baru masuk, jadi tidak ada salinan state lokal yang bisa menyimpang dari database.
 export function ManageListPanel({
   title,
-  items: initialItems,
+  items,
   addPlaceholder,
   emptyLabel,
+  onAdd,
+  onRemove,
 }: {
   title: string;
   items: NamedItem[];
   addPlaceholder: string;
   emptyLabel: string;
+  onAdd: (name: string) => Promise<ActionResult>;
+  onRemove: (id: string) => Promise<ActionResult>;
 }) {
-  const [items, setItems] = useState(initialItems);
   const [draft, setDraft] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     const trimmed = draft.trim();
     if (!trimmed) return;
-    if (items.some((item) => item.name.toLowerCase() === trimmed.toLowerCase())) {
-      setDraft("");
-      return;
-    }
-    setItems((prev) => [...prev, { id: `tmp_${Date.now()}`, name: trimmed }]);
-    setDraft("");
+    setError(null);
+    startTransition(async () => {
+      const result = await onAdd(trimmed);
+      if (result.error) setError(result.error);
+      else setDraft("");
+    });
   }
 
   function handleRemove(id: string) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+    setError(null);
+    startTransition(async () => {
+      const result = await onRemove(id);
+      if (result.error) setError(result.error);
+    });
   }
 
   return (
@@ -52,12 +63,19 @@ export function ManageListPanel({
         />
         <button
           type="submit"
-          className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3.5 py-2.5 text-sm font-medium text-paper transition-opacity hover:opacity-90"
+          disabled={isPending}
+          className="inline-flex items-center gap-1.5 rounded-md bg-ink px-3.5 py-2.5 text-sm font-medium text-paper transition-opacity hover:opacity-90 disabled:opacity-60"
         >
           <Plus className="h-4 w-4" strokeWidth={2} />
           Tambah
         </button>
       </form>
+
+      {error ? (
+        <p role="alert" className="mt-3 rounded-md bg-status-rejected-soft px-3 py-2 text-sm text-status-rejected">
+          {error}
+        </p>
+      ) : null}
 
       {items.length === 0 ? (
         <p className="mt-5 text-sm text-ink-soft">{emptyLabel}</p>
@@ -72,6 +90,7 @@ export function ManageListPanel({
               <button
                 type="button"
                 onClick={() => handleRemove(item.id)}
+                disabled={isPending}
                 aria-label={`Hapus ${item.name}`}
                 className="text-ink-soft hover:text-status-rejected"
               >

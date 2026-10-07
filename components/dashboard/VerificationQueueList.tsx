@@ -1,6 +1,6 @@
 import { Inbox } from "lucide-react";
 import { VerificationQueueItem } from "@/components/dashboard/VerificationQueueItem";
-import type { QueuedArticle } from "@/lib/dummy-data";
+import type { QueuedArticle } from "@/lib/types";
 
 export function VerificationQueueList({ articles }: { articles: QueuedArticle[] }) {
   if (articles.length === 0) {

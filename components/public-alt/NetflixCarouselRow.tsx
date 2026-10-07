@@ -1,6 +1,6 @@
 import { NetflixArticleCard } from "@/components/public-alt/NetflixArticleCard";
 import { NetflixRow } from "@/components/public-alt/NetflixRow";
-import type { PublicArticle } from "@/lib/dummy-data";
+import type { PublicArticle } from "@/lib/types";
 
 export function NetflixCarouselRow({
   title,

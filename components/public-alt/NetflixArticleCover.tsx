@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Zap, TrendingUp, HeartPulse, Brain, Scale, Cpu, type LucideIcon } from "lucide-react";
 import { NETFLIX_COVER_THEMES } from "@/components/public-alt/NetflixCoverThemes";
-import type { CoverThemeKey } from "@/lib/dummy-data";
+import type { CoverThemeKey } from "@/lib/types";
 import { getCoverImage } from "@/lib/cover-images";
 
 const ICONS: Record<string, LucideIcon> = {

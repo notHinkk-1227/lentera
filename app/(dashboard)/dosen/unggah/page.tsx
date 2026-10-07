@@ -1,8 +1,10 @@
 import { UploadArticleForm } from "@/components/dashboard/UploadArticleForm";
 import { requireRole } from "@/lib/authz";
+import { articleService } from "@/lib/services/articleService";
 
 export default async function UploadArticlePage() {
-  await requireRole("DOSEN");
+  const user = await requireRole("DOSEN");
+  const { facultyName, categories } = await articleService.getUploadFormOptions(user.id);
 
   return (
     <div className="max-w-2xl">
@@ -12,7 +14,7 @@ export default async function UploadArticlePage() {
       </p>
 
       <div className="mt-6">
-        <UploadArticleForm />
+        <UploadArticleForm facultyName={facultyName} categories={categories} />
       </div>
     </div>
   );

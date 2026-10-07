@@ -1,7 +1,7 @@
 // 17 Tujuan Pembangunan Berkelanjutan (SDG) untuk klasifikasi karya (FR-NASKAH-08, FR-ADM-03).
 //
-// Data ini sementara hidup di kode. Nanti dipindah ke tabel `Sdg` lewat seed (lihat PRD 6.3).
-// Warna mengikuti palet resmi SDG PBB dan dipakai untuk grafik (mis. MAESTRO nanti).
+// Nomor dan nama juga ada di tabel `Sdg` (diisi migrasi dan seed dari daftar ini). Warna, teks,
+// dan ikon hanya urusan tampilan, jadi tetap di sini. Warna mengikuti palet resmi SDG PBB dan dipakai untuk grafik (mis. MAESTRO nanti).
 // Ikon resmi ada di public/images/sdg/sdg-NN.png; lihat components/article-detail/SdgAlignment.tsx.
 export type Sdg = {
   number: number;

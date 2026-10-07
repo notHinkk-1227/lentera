@@ -1,4 +1,4 @@
-import type { DetailRoadmapTopic } from "@/lib/dummy-article-detail";
+import type { DetailRoadmapTopic } from "@/lib/article-detail";
 import { SectionHeading } from "@/components/article-detail/SectionHeading";
 
 // Topik roadmap Renstra 2024–2028. Dipilih manual oleh pengunggah (FR-NASKAH-04), jadi

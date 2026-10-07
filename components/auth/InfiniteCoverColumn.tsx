@@ -1,5 +1,5 @@
 import { ArticleCover } from "@/components/public/ArticleCover";
-import type { PublicArticle } from "@/lib/dummy-data";
+import type { PublicArticle } from "@/lib/types";
 
 // Ukuran cover di komponen ini pakai size="sm" (lihat ArticleCover) — tinggi
 // tetap 180px, ditambah gap-4 (16px) antar tile. Dipakai untuk mengestimasi

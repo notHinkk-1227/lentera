@@ -1,5 +1,5 @@
 import { NetflixArticleCard } from "@/components/public-alt/NetflixArticleCard";
-import type { PublicArticle } from "@/lib/dummy-data";
+import type { PublicArticle } from "@/lib/types";
 
 // Sort pill di sini masih visual saja (belum benar-benar mengubah urutan).
 // TODO: sambungkan ke articleService begitu database aktif.

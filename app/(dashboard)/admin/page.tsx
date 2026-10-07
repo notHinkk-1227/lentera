@@ -2,10 +2,8 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { VerificationQueueList } from "@/components/dashboard/VerificationQueueList";
 import { requireRole } from "@/lib/authz";
-import { dummyPendingQueue } from "@/lib/dummy-data";
+import { articleService } from "@/lib/services/articleService";
 
-// TODO: ganti dummyPendingQueue dengan articleService.getPendingQueue()
-// begitu backend & database aktif — lihat lib/services/articleService.ts.
 export default async function AdminQueuePage({
   searchParams,
 }: {
@@ -13,6 +11,7 @@ export default async function AdminQueuePage({
 }) {
   await requireRole("ADMIN");
   const { reviewed } = await searchParams;
+  const queue = await articleService.getPendingQueue();
 
   return (
     <div>
@@ -35,11 +34,11 @@ export default async function AdminQueuePage({
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Menunggu verifikasi" value={dummyPendingQueue.length} />
+        <StatCard label="Menunggu verifikasi" value={queue.length} />
       </div>
 
       <div className="mt-8">
-        <VerificationQueueList articles={dummyPendingQueue} />
+        <VerificationQueueList articles={queue} />
       </div>
     </div>
   );

@@ -19,7 +19,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await db.user.findUnique({
           where: { email: credentials.email as string },
         });
-        if (!user) return null;
+        // Akun nonaktif tidak boleh login (pesan sengaja sama dengan salah kata sandi).
+        if (!user || !user.isActive) return null;
 
         const isValid = await bcrypt.compare(
           credentials.password as string,

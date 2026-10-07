@@ -1,5 +1,5 @@
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
-import type { DummyArticle } from "@/lib/dummy-data";
+import type { DashboardArticle } from "@/lib/types";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("id-ID", {
@@ -9,7 +9,7 @@ function formatDate(iso: string) {
   });
 }
 
-export function ArticleTable({ articles }: { articles: DummyArticle[] }) {
+export function ArticleTable({ articles }: { articles: DashboardArticle[] }) {
   if (articles.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border px-6 py-14 text-center">

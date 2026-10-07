@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FileText, Bookmark } from "lucide-react";
 import { NETFLIX_COVER_THEMES } from "@/components/public-alt/NetflixCoverThemes";
 import { getHeroImage } from "@/lib/cover-images";
-import type { PublicArticle } from "@/lib/dummy-data";
+import type { PublicArticle } from "@/lib/types";
 
 export function NetflixSecondaryBanner({ article }: { article: PublicArticle }) {
   const backdrop = NETFLIX_COVER_THEMES[article.coverTheme].bg;

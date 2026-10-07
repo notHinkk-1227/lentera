@@ -1,12 +1,12 @@
 import { ArticleTable } from "@/components/dashboard/ArticleTable";
 import { requireRole } from "@/lib/authz";
-import { dummyArticles } from "@/lib/dummy-data";
+import { articleService } from "@/lib/services/articleService";
 
 // FR-NASKAH-07: daftar karya milik pengunggah beserta statusnya.
-// TODO: ganti dummyArticles dengan articleService.getArticlesByAuthor(user.id)
-// dan tambahkan filter per status begitu database aktif.
+// TODO: tambahkan filter per status.
 export default async function MyArticlesPage() {
-  await requireRole("DOSEN");
+  const user = await requireRole("DOSEN");
+  const { articles } = await articleService.getArticlesByUploader(user.id);
 
   return (
     <div>
@@ -16,7 +16,7 @@ export default async function MyArticlesPage() {
       </p>
 
       <div className="mt-6">
-        <ArticleTable articles={dummyArticles} />
+        <ArticleTable articles={articles} />
       </div>
     </div>
   );

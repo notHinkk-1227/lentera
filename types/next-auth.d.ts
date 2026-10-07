@@ -1,6 +1,6 @@
 // Augmentasi tipe NextAuth: secara default `session.user` cuma punya
 // name/email/image. Kita tambahkan id & role supaya bisa dipakai langsung
-// sebagai authorId di route handler tanpa error TypeScript.
+// sebagai uploaderId di route handler tanpa error TypeScript.
 import type { Role } from "@prisma/client";
 import type { DefaultSession } from "next-auth";
 

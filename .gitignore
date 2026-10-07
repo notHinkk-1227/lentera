@@ -53,3 +53,6 @@ Thumbs.db
 
 # uploaded files saat development lokal (lihat lib/storage/index.ts)
 /public/uploads/
+
+# berkas PDF unggahan lokal — privat, disajikan hanya lewat /api/articles/[id]/download
+/.uploads/

@@ -4,13 +4,20 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { KeywordTagInput } from "@/components/dashboard/KeywordTagInput";
 import { FileDropField } from "@/components/dashboard/FileDropField";
-import { dummyCategories, dummyCurrentDosen } from "@/lib/dummy-data";
+import type { NamedItem } from "@/lib/types";
 
-// TODO: ganti simulasi submit di bawah dengan POST ke /api/articles
-// (lihat app/api/articles/route.ts) begitu backend, storage, dan auth aktif.
-// File PDF & cover di sini baru dipegang sebagai File object di state,
-// belum benar-benar di-upload — itu pekerjaan lib/storage/index.ts nanti.
-export function UploadArticleForm() {
+const MAX_PDF_BYTES = 20 * 1024 * 1024; // sama dengan batas di server (lib/validation/article.ts)
+
+// Dikirim sebagai multipart/form-data ke POST /api/articles. Server memvalidasi ulang semuanya
+// (ukuran, tanda tangan PDF, kategori) dan mengambil fakultas dari profil pengunggah, jadi
+// `facultyName` di bawah murni informasi tampilan.
+export function UploadArticleForm({
+  facultyName,
+  categories,
+}: {
+  facultyName: string | null;
+  categories: NamedItem[];
+}) {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -19,7 +26,6 @@ export function UploadArticleForm() {
   const [keywords, setKeywords] = useState<string[]>([]);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,13 +46,37 @@ export function UploadArticleForm() {
       setError("File PDF artikel wajib diunggah.");
       return;
     }
+    if (pdfFile.size > MAX_PDF_BYTES) {
+      setError("Ukuran PDF melebihi 20 MB.");
+      return;
+    }
+
+    const body = new FormData();
+    body.set("title", title.trim());
+    body.set("abstract", abstract.trim());
+    body.set("year", String(year));
+    keywords.forEach((keyword) => body.append("keywords", keyword));
+    categoryIds.forEach((id) => body.append("categoryIds", id));
+    body.set("pdf", pdfFile);
 
     setIsSubmitting(true);
-    // Simulasi delay request — dihapus begitu terhubung ke API sungguhan.
-    await new Promise((resolve) => setTimeout(resolve, 700));
+    try {
+      const response = await fetch("/api/articles", { method: "POST", body });
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        setError(payload?.error ?? "Karya gagal dikirim. Coba lagi.");
+        setIsSubmitting(false);
+        return;
+      }
+    } catch {
+      setError("Tidak dapat terhubung ke server. Periksa koneksi lalu coba lagi.");
+      setIsSubmitting(false);
+      return;
+    }
 
-    // Dummy: anggap selalu berhasil, kembali ke dashboard dengan status "menunggu verifikasi".
+    // Berhasil: kembali ke dashboard dengan status "menunggu verifikasi".
     router.push("/dosen?submitted=1");
+    router.refresh();
   }
 
   return (
@@ -106,7 +136,7 @@ export function UploadArticleForm() {
             <div>
               <span className="block text-sm font-medium text-ink">Fakultas</span>
               <p className="mt-1.5 rounded-md border border-border bg-paper px-3.5 py-2.5 text-sm text-ink-soft">
-                {dummyCurrentDosen.facultyName}
+                {facultyName ?? "Belum terhubung ke fakultas"}
               </p>
             </div>
           </div>
@@ -121,7 +151,12 @@ export function UploadArticleForm() {
           <div>
             <span className="block text-sm font-medium text-ink">Kategori</span>
             <div className="mt-2 flex flex-wrap gap-2">
-              {dummyCategories.map((category) => {
+              {categories.length === 0 ? (
+                <p className="text-sm text-ink-soft">
+                  Belum ada kategori. Hubungi admin untuk menambahkannya.
+                </p>
+              ) : null}
+              {categories.map((category) => {
                 const isActive = categoryIds.includes(category.id);
                 return (
                   <button
@@ -146,18 +181,12 @@ export function UploadArticleForm() {
       <div className="rounded-lg border border-border bg-surface p-6">
         <h2 className="font-serif text-lg text-ink">Berkas</h2>
 
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-4">
           <FileDropField
             label="File PDF artikel"
-            helperText="Wajib. Maks. 20MB, format PDF."
+            helperText="Wajib. Maks. 20MB, format PDF. Cover dibuat otomatis sesuai fakultas."
             accept="application/pdf"
             onFileSelected={setPdfFile}
-          />
-          <FileDropField
-            label="Cover (opsional)"
-            helperText="Kosongkan untuk cover otomatis sesuai fakultas."
-            accept="image/*"
-            onFileSelected={setCoverFile}
           />
         </div>
       </div>

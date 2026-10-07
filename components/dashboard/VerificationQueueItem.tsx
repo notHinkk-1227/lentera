@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArticleCover } from "@/components/public/ArticleCover";
-import type { QueuedArticle } from "@/lib/dummy-data";
+import type { QueuedArticle } from "@/lib/types";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("id-ID", {

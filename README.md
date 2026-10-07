@@ -157,3 +157,43 @@ Rencana 12 minggu oleh satu developer (28 September – 18 Desember 2026), rinci
 ## Kontribusi
 
 Lihat [`CONTRIBUTING.md`](CONTRIBUTING.md). Singkatnya: jangan push langsung ke `main`, satu PR satu tujuan, dan pastikan `npm run lint`, `npm run build`, dan `npm run typecheck` lulus sebelum membuka PR.
+
+## Alur data (database)
+
+Semua halaman membaca dari PostgreSQL lewat `route/halaman → service → repository → Prisma`.
+Komponen hanya menerima view-model di `lib/types.ts` / `lib/article-detail.ts`; pemetaan dari
+baris Prisma ada di `lib/mappers.ts`.
+
+- **Publik** (`/`, `/search`, `/articles/[id]`): hanya karya `PUBLISHED`; karya lain 404.
+- **Penulis & SDG:** karya punya penulis berurutan (`Author` + `ArticleAuthor`, bisa dosen,
+  mahasiswa, atau eksternal) dan SDG (`ArticleSdg`). Pengunggah (`Article.uploaderId`) belum
+  tentu penulis; saat mengunggah, profil penulis pengunggah dibuat otomatis sebagai penulis pertama.
+- **Unggah** (`/dosen/unggah` → `POST /api/articles`, multipart): PDF divalidasi (≤ 20 MB, tanda
+  tangan `%PDF-`), fakultas diambil dari profil pengunggah, status awal `PENDING`.
+- **Unduh** (`GET /api/articles/[id]/download`): satu-satunya pintu ke berkas; menambah
+  `downloadCount` untuk karya terbit. Karya belum terbit hanya terbuka untuk admin/pengunggah.
+- **Verifikasi** (`/admin`): setujui/tolak hanya mengubah karya yang masih `PENDING` (atomik).
+- **Fakultas & kategori** (`/admin/kelola`): tambah/hapus tersimpan; entri yang masih dipakai
+  tidak bisa dihapus.
+
+Berkas lokal disimpan di `.uploads/` (atur dengan `UPLOAD_DIR`). `CloudStorage` untuk production
+belum diimplementasikan.
+
+## Menerapkan migrasi `penulis_sdg`
+
+Migrasi `20261008090000_penulis_sdg` ditulis manual: kolom `authorId` di-**rename** menjadi
+`uploaderId` (data tetap), lalu karya lama di-backfill ke tabel penulis.
+
+```bash
+# Dev (data seed boleh hilang): paling sederhana
+npx prisma migrate reset        # menerapkan semua migrasi + menjalankan seed
+
+# Dev dengan data yang ingin dipertahankan, atau staging/production
+pg_dump "$DATABASE_URL" > cadangan.sql   # Prisma tidak punya rollback
+npx prisma migrate deploy
+npx prisma generate
+
+# Setelah itu, pastikan skema dan migrasi sinkron (harus "No difference"):
+npx prisma migrate diff --from-migrations prisma/migrations \
+  --to-schema-datamodel prisma/schema.prisma --shadow-database-url "$SHADOW_DATABASE_URL"
+```

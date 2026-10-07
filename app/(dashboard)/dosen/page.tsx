@@ -3,10 +3,8 @@ import { CheckCircle2 } from "lucide-react";
 import { StatCard } from "@/components/dashboard/StatCard";
 import { ArticleTable } from "@/components/dashboard/ArticleTable";
 import { requireRole } from "@/lib/authz";
-import { dummyArticles, getDummyStats } from "@/lib/dummy-data";
+import { articleService } from "@/lib/services/articleService";
 
-// TODO: ganti dummyArticles dengan articleService.getArticlesByAuthor(session.user.id)
-// begitu NextAuth session dan database aktif.
 export default async function DosenDashboardPage({
   searchParams,
 }: {
@@ -14,7 +12,7 @@ export default async function DosenDashboardPage({
 }) {
   const user = await requireRole("DOSEN");
   const { submitted } = await searchParams;
-  const stats = getDummyStats(dummyArticles);
+  const { articles, stats } = await articleService.getArticlesByUploader(user.id);
 
   return (
     <div>
@@ -55,7 +53,7 @@ export default async function DosenDashboardPage({
           Status terbaru dari setiap karya ilmiah yang kamu unggah.
         </p>
         <div className="mt-4">
-          <ArticleTable articles={dummyArticles} />
+          <ArticleTable articles={articles} />
         </div>
       </div>
     </div>
