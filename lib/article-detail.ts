@@ -1,8 +1,8 @@
 // Tipe & helper untuk halaman detail karya (PRD 5.4.1). Data diisi dari database lewat
 // articleService.getPublicArticleDetail (lib/services/articleService.ts).
 //
-// Catatan: SDG dan penulis majemuk belum punya tabel (PRD 6.3, rencana minggu 2). Sampai tabelnya
-// ada, `sdgs` selalu kosong dan `authors` berisi pengunggah karya sebagai satu-satunya penulis.
+// Berkas PDF tidak disimpan di LENTERA: karya hanya menaut ke Google Scholar, SINTA, dan tautan
+// unduh di situs lain.
 import type { PublicArticle } from "@/lib/types";
 
 export type WorkType = "RESEARCH" | "PKM";
@@ -53,6 +53,9 @@ export type ArticleDetailExtras = {
   scopusUrl?: string;
   /** URL manual; bila kosong, tautan Google Scholar dibentuk dari judul (FR-EXT-02). */
   scholarUrl?: string;
+  sintaUrl?: string;
+  /** Ada tautan unduh eksternal. URL aslinya tidak dikirim ke UI; akses lewat /api/articles/[id]/download. */
+  hasDownload: boolean;
   /** Hanya untuk PkM. */
   region?: Region;
   partner?: string;

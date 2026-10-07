@@ -40,7 +40,7 @@ Daftar tipe & scope ada di `.gitmessage`.
 - TypeScript, bukan JavaScript.
 - Route handler (`app/api/**`) hanya urus request/response. Business logic di `lib/services/`, akses DB di `lib/repositories/`.
 - Semua akses database lewat Prisma Client, tanpa raw SQL kecuali terpaksa.
-- File upload lewat abstraksi `lib/storage/`, jangan tulis ke filesystem langsung.
+- Tidak ada unggah berkas: karya hanya menyimpan tautan eksternal (unduh, Scholar, SINTA). Validasi URL (hanya http/https) lewat `lib/validation/article.ts`.
 - Artikel `PENDING`/`REJECTED` tidak boleh muncul di halaman/endpoint publik.
 - Validasi input dengan `zod`.
 - Jangan hardcode secret; semua lewat `.env`.

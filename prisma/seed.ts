@@ -18,8 +18,6 @@
 
 import { PrismaClient, Role, ArticleStatus, WorkType, Region, AuthorType } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { mkdirSync, writeFileSync } from "node:fs";
-import path from "node:path";
 import { seedRoadmap } from "./seed-roadmap";
 import { SDGS } from "../lib/sdg";
 
@@ -27,25 +25,18 @@ const prisma = new PrismaClient();
 
 const DEV_PASSWORD = "password123";
 
-// PDF contoh satu halaman, ditulis ke folder unggahan lokal (sama dengan LocalStorage di
-// lib/storage) agar tombol "Unduh PDF" bisa dicoba tanpa berkas asli.
-const SEED_PDF_KEY = "seed/placeholder.pdf";
-const SEED_PDF_URL = `local:${SEED_PDF_KEY}`;
+// LENTERA tidak menyimpan PDF; karya hanya menaut ke situs eksternal. Tautan contoh di bawah
+// sengaja mengarah ke domain contoh agar tombol "Unduh" dan panel tautan admin bisa dicoba.
+const SEED_DOWNLOAD_BASE = "https://example.com/lentera-seed";
+const SEED_SINTA_URL = "https://sinta.kemdiktisaintek.go.id/";
 
-function writeSeedPdf() {
-  const stream = "BT /F1 14 Tf 20 70 Td (Berkas contoh LENTERA) Tj ET";
-  const pdf =
-    "%PDF-1.4\n" +
-    "1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
-    "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n" +
-    "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 144]/Contents 4 0 R/Resources<</Font<</F1 5 0 R>>>>>>endobj\n" +
-    `4 0 obj<</Length ${stream.length}>>stream\n${stream}\nendstream endobj\n` +
-    "5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n" +
-    "trailer<</Root 1 0 R>>\n%%EOF\n";
-  const root = path.resolve(process.env.UPLOAD_DIR ?? path.join(process.cwd(), ".uploads"));
-  const full = path.join(root, SEED_PDF_KEY);
-  mkdirSync(path.dirname(full), { recursive: true });
-  writeFileSync(full, pdf, "latin1");
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
 }
 
 interface ArticleSeed {
@@ -68,6 +59,9 @@ interface ArticleSeed {
   region?: Region; // hanya PKM
   partner?: string; // hanya PKM
   sourceResearchTitle?: string; // judul riset sumber (hanya PKM)
+  downloadUrl?: string; // tautan unduh eksternal; bila kosong dipakai tautan contoh
+  scholarUrl?: string;
+  sintaUrl?: string; // bila kosong: tautan contoh untuk karya PUBLISHED
 }
 
 const articlesSeed: ArticleSeed[] = [
@@ -357,7 +351,6 @@ async function findOrCreateAuthor(name: string, type: AuthorType, affiliation?: 
 
 async function main() {
   const passwordHash = await bcrypt.hash(DEV_PASSWORD, 10);
-  writeSeedPdf();
 
   // --- Roadmap (harus lebih dulu: karya contoh menautkan ke topik roadmap) -----
   await seedRoadmap(prisma);
@@ -475,6 +468,14 @@ async function main() {
       partner: a.partner ?? null,
       sourceResearchId: sourceResearchId ?? null,
     };
+    // Tautan eksternal (contoh untuk dev). Karya yang ditolak sengaja tanpa tautan unduh.
+    const externalLinks = {
+      downloadUrl:
+        a.downloadUrl ??
+        (a.status === ArticleStatus.REJECTED ? null : `${SEED_DOWNLOAD_BASE}/${slugify(a.title)}.pdf`),
+      scholarUrl: a.scholarUrl ?? null,
+      sintaUrl: a.sintaUrl ?? (a.status === ArticleStatus.PUBLISHED ? SEED_SINTA_URL : null),
+    };
     const themeRefs = (a.themes ?? []).map((slug) => ({ slug }));
     const focusRefs = (a.pkmFocusAreas ?? []).map((slug) => ({ slug }));
 
@@ -483,12 +484,14 @@ async function main() {
     if (existing) {
       // Hanya tautan taksonomi yang diperbarui; status/unduhan tidak ditimpa
       // supaya hasil uji verifikasi di lokal tidak hilang saat seed diulang.
-      // fileUrl hanya diganti bila masih placeholder lama (example.com), bukan unggahan sungguhan.
-      const isOldPlaceholder = existing.fileUrl.startsWith("https://example.com");
+      // Tautan eksternal hanya diisi bila masih kosong, supaya tautan yang diubah lewat form
+      // tidak tertimpa saat seed diulang.
       await prisma.article.update({
         where: { id: existing.id },
         data: {
-          ...(isOldPlaceholder ? { fileUrl: SEED_PDF_URL } : {}),
+          ...(existing.downloadUrl ? {} : { downloadUrl: externalLinks.downloadUrl }),
+          ...(existing.sintaUrl ? {} : { sintaUrl: externalLinks.sintaUrl }),
+          ...(existing.scholarUrl ? {} : { scholarUrl: externalLinks.scholarUrl }),
           ...taxonomy,
           themes: { set: themeRefs },
           pkmFocusAreas: { set: focusRefs },
@@ -517,7 +520,7 @@ async function main() {
         year: a.year,
         status: a.status,
         rejectedNote: a.rejectedNote ?? null,
-        fileUrl: SEED_PDF_URL,
+        ...externalLinks,
         downloadCount: a.downloadCount,
         // Tanggal terbit berselang satu hari per karya agar urutan "Artikel terbaru" stabil.
         publishedAt:

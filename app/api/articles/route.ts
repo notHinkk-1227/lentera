@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { ServiceError } from "@/lib/errors";
 import { articleService } from "@/lib/services/articleService";
-import { MAX_PDF_BYTES, submitArticleFieldsSchema } from "@/lib/validation/article";
+import { submitArticleFieldsSchema } from "@/lib/validation/article";
 
 // GET /api/articles?query=...&faculty=...&facultyId=...&categoryId=...&page=1
 export async function GET(request: NextRequest) {
@@ -25,8 +25,9 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({ data: items, meta });
 }
 
-// POST /api/articles — dosen mengunggah karya baru (multipart/form-data):
-//   title, abstract, year, keywords (boleh berulang), categoryIds (boleh berulang), pdf (berkas)
+// POST /api/articles — dosen mengirim karya baru (application/json):
+//   title, abstract, year, keywords[], categoryIds[],
+//   downloadUrl?, scholarUrl?, sintaUrl?  (tautan http(s) ke situs eksternal; tidak ada unggah berkas)
 // Fakultas diambil dari profil pengunggah, bukan dari body.
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -38,37 +39,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Hanya dosen yang boleh mengunggah artikel" }, { status: 403 });
   }
 
-  let form: FormData;
+  let body: unknown;
   try {
-    form = await request.formData();
+    body = await request.json();
   } catch {
     return NextResponse.json({ error: "Permintaan tidak valid." }, { status: 400 });
   }
 
-  const parsed = submitArticleFieldsSchema.safeParse({
-    title: form.get("title"),
-    abstract: form.get("abstract"),
-    year: form.get("year"),
-    keywords: form.getAll("keywords").map(String),
-    categoryIds: form.getAll("categoryIds").map(String),
-  });
+  const parsed = submitArticleFieldsSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Data tidak valid." }, { status: 400 });
-  }
-
-  const pdf = form.get("pdf");
-  if (!(pdf instanceof File) || pdf.size === 0) {
-    return NextResponse.json({ error: "File PDF wajib diunggah." }, { status: 400 });
-  }
-  if (pdf.size > MAX_PDF_BYTES) {
-    return NextResponse.json({ error: "Ukuran PDF melebihi 20 MB." }, { status: 413 });
   }
 
   try {
     const article = await articleService.submitArticle({
       ...parsed.data,
       uploaderId: session.user.id,
-      pdf: Buffer.from(await pdf.arrayBuffer()),
     });
     return NextResponse.json({ data: article }, { status: 201 });
   } catch (error) {

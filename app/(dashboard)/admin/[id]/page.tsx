@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ArticleCover } from "@/components/public/ArticleCover";
-import { PdfPreviewPlaceholder } from "@/components/dashboard/PdfPreviewPlaceholder";
+import { ExternalLinksReview } from "@/components/dashboard/ExternalLinksReview";
 import { ArticleReviewActions } from "@/components/dashboard/ArticleReviewActions";
 import { requireRole } from "@/lib/authz";
 import { articleService } from "@/lib/services/articleService";
@@ -71,9 +71,9 @@ export default async function AdminArticleReviewPage({
       </div>
 
       <div className="mt-8 border-t border-border pt-6">
-        <h2 className="font-serif text-lg text-ink">Berkas artikel</h2>
+        <h2 className="font-serif text-lg text-ink">Tautan eksternal</h2>
         <div className="mt-3">
-          <PdfPreviewPlaceholder fileName={`${article.title.slice(0, 40)}...pdf`} />
+          <ExternalLinksReview links={article} />
         </div>
       </div>
 

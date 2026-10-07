@@ -11,7 +11,7 @@ LENTERA adalah etalase hasil **penelitian** dan **pengabdian kepada masyarakat (
 | Untuk | Fitur |
 | --- | --- |
 | **Publik** (tanpa login) | Homepage bertema gelap ala Netflix (hero karya unggulan, pencarian, filter kategori, carousel "Artikel terbaru" dan "Paling banyak diunduh", baris Top 10), pencarian, halaman detail karya |
-| **Dosen** | Dashboard ringkasan, daftar karya beserta status verifikasi, formulir unggah karya (PDF + metadata) |
+| **Dosen** | Dashboard ringkasan, daftar karya beserta status verifikasi, formulir kirim karya (metadata + tautan unduh, Google Scholar, SINTA) |
 | **Admin / Pustakawan** | Antrean verifikasi (setujui atau tolak dengan catatan), kelola fakultas dan kategori |
 | **Taksonomi roadmap** | 4 spesialisasi riset, 10 tema, 6 bidang fokus PkM, 72 topik (50 riset + 22 PkM) untuk 2024–2028 |
 
@@ -60,7 +60,6 @@ Kata sandi ini hanya untuk database lokal. Jangan pernah dipakai di staging atau
 | `DATABASE_URL` | Ya | Connection string PostgreSQL |
 | `AUTH_SECRET` | Ya | Secret NextAuth |
 | `AUTH_URL` | Production | URL publik aplikasi |
-| `BLOB_READ_WRITE_TOKEN` | Opsional | Hanya bila memakai Vercel Blob untuk storage production |
 
 ## Script
 
@@ -95,7 +94,6 @@ lib/
   db.ts                Prisma Client
   repositories/        akses data lewat Prisma
   services/            business logic (artikel, cover)
-  storage/             abstraksi penyimpanan file (lokal vs cloud)
   dummy-data.ts        data sementara untuk UI (akan dihapus)
 prisma/                schema, migrasi, seed, data roadmap
 types/                 augmentasi tipe NextAuth (id, role)
@@ -127,8 +125,6 @@ Diperbarui 2 Oktober 2026. Untuk status terhadap tiap kebutuhan produk, lihat ba
 **Masih dummy / belum selesai**
 - [ ] Halaman masih membaca `lib/dummy-data.ts`, belum `articleService`
 - [ ] Server Action verifikasi admin belum tersambung ke database
-- [ ] `LocalStorage` / `CloudStorage` dan `TemplateCoverStrategy` belum diimplementasikan, sehingga unggah karya belum berfungsi
-- [ ] Endpoint unduh PDF (menambah `downloadCount`)
 - [ ] Skema belum punya SDG, penulis majemuk, dan field DOI/Scopus/Scholar
 - [ ] MAESTRO, kelola akun, rekap CSV, filter roadmap
 - [ ] Pencarian kata kunci: baru cocok penuh (huruf besar/kecil diabaikan), belum cocok sebagian
@@ -168,16 +164,17 @@ baris Prisma ada di `lib/mappers.ts`.
 - **Penulis & SDG:** karya punya penulis berurutan (`Author` + `ArticleAuthor`, bisa dosen,
   mahasiswa, atau eksternal) dan SDG (`ArticleSdg`). Pengunggah (`Article.uploaderId`) belum
   tentu penulis; saat mengunggah, profil penulis pengunggah dibuat otomatis sebagai penulis pertama.
-- **Unggah** (`/dosen/unggah` → `POST /api/articles`, multipart): PDF divalidasi (≤ 20 MB, tanda
-  tangan `%PDF-`), fakultas diambil dari profil pengunggah, status awal `PENDING`.
-- **Unduh** (`GET /api/articles/[id]/download`): satu-satunya pintu ke berkas; menambah
-  `downloadCount` untuk karya terbit. Karya belum terbit hanya terbuka untuk admin/pengunggah.
+- **Kirim karya** (`/dosen/unggah` → `POST /api/articles`, JSON): tidak ada unggah berkas.
+  Pengunggah mengisi metadata dan tiga tautan opsional (`downloadUrl`, `scholarUrl`, `sintaUrl`);
+  hanya URL http(s) yang diterima. Fakultas diambil dari profil pengunggah, status awal `PENDING`.
+- **Unduh** (`GET /api/articles/[id]/download`): menambah `downloadCount` untuk karya terbit lalu
+  mengarahkan (302) ke `downloadUrl` di situs eksternal. Karya belum terbit hanya terbuka untuk
+  admin/pengunggah; tanpa `downloadUrl` hasilnya 404 dan tombol Unduh tidak tampil.
 - **Verifikasi** (`/admin`): setujui/tolak hanya mengubah karya yang masih `PENDING` (atomik).
 - **Fakultas & kategori** (`/admin/kelola`): tambah/hapus tersimpan; entri yang masih dipakai
   tidak bisa dihapus.
 
-Berkas lokal disimpan di `.uploads/` (atur dengan `UPLOAD_DIR`). `CloudStorage` untuk production
-belum diimplementasikan.
+LENTERA tidak menyimpan berkas PDF sama sekali, jadi tidak perlu storage lokal maupun cloud.
 
 ## Menerapkan migrasi `penulis_sdg`
 

@@ -1,8 +1,31 @@
 import { z } from "zod";
 
-export const MAX_PDF_BYTES = 20 * 1024 * 1024; // 20 MB (FR-NASKAH-02)
+// Tautan eksternal bersifat opsional. String kosong dianggap "tidak diisi". Hanya http(s) yang
+// diterima: URL ini dipakai di atribut href dan redirect, jadi skema lain (javascript:, data:)
+// harus ditolak di server.
+const MAX_URL_LENGTH = 2000;
 
-// Field teks pada form unggah. Berkas PDF divalidasi terpisah (ukuran + tanda tangan berkas).
+export function isHttpUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+const optionalUrl = (label: string) =>
+  z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    z
+      .string()
+      .trim()
+      .max(MAX_URL_LENGTH, `Tautan ${label} terlalu panjang.`)
+      .refine(isHttpUrl, `Tautan ${label} harus berupa URL http(s) yang valid.`)
+      .optional(),
+  );
+
+// Field pada form unggah karya. Tidak ada berkas: karya hanya menaut ke situs eksternal.
 export const submitArticleFieldsSchema = z.object({
   title: z.string().trim().min(5, "Judul minimal 5 karakter."),
   abstract: z.string().trim().min(20, "Abstrak minimal 20 karakter."),
@@ -15,6 +38,9 @@ export const submitArticleFieldsSchema = z.object({
     .min(1990, "Tahun tidak valid.")
     .max(new Date().getFullYear() + 1, "Tahun tidak valid."),
   categoryIds: z.array(z.string().min(1)).min(1, "Pilih minimal 1 kategori."),
+  downloadUrl: optionalUrl("unduh"),
+  scholarUrl: optionalUrl("Google Scholar"),
+  sintaUrl: optionalUrl("SINTA"),
 });
 
 export const rejectNoteSchema = z.string().trim().min(1, "Alasan penolakan wajib diisi.").max(1000);
@@ -24,9 +50,3 @@ export const taxonomyNameSchema = z
   .trim()
   .min(2, "Nama minimal 2 karakter.")
   .max(100, "Nama maksimal 100 karakter.");
-
-// Berkas PDF selalu diawali "%PDF-". Pemeriksaan ini mencegah berkas lain yang hanya
-// diberi nama .pdf lolos (NFR-SEC-03).
-export function looksLikePdf(data: Buffer): boolean {
-  return data.length >= 5 && data.subarray(0, 5).toString("latin1") === "%PDF-";
-}

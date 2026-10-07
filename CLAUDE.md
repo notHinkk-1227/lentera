@@ -52,7 +52,7 @@ Sesuaikan dan detailkan skema ini bersama user sebelum implementasi — jangan a
 2. **Admin verifikasi** → ubah status jadi `PUBLISHED` atau `REJECTED` (dengan catatan)
 3. **Publik mengakses homepage** → melihat hero artikel unggulan, carousel "Artikel Terbaru" & "Paling Banyak Diunduh", search bar, filter fakultas/kategori
 4. **Publik cari & buka artikel** → hanya artikel berstatus `PUBLISHED` yang muncul di pencarian publik
-5. **Publik unduh PDF** → increment counter unduhan
+5. **Publik klik "Unduh"** → increment counter unduhan, lalu diarahkan ke tautan unduh di situs eksternal
 
 ## Prinsip Desain UI
 
@@ -63,7 +63,7 @@ Sesuaikan dan detailkan skema ini bersama user sebelum implementasi — jangan a
 
 ## Batasan & Hal yang Harus Dihindari
 
-- Jangan simpan file upload di file system lokal untuk kode yang akan dijalankan di production (Vercel serverless tidak persisten) — gunakan abstraksi storage yang mudah diganti (lokal saat dev, cloud storage saat production).
+- Jangan menyimpan berkas PDF di LENTERA. Karya hanya menaut ke situs eksternal (tautan unduh, Google Scholar, SINTA). Semua URL eksternal wajib divalidasi hanya http(s) di server sebelum disimpan atau dipakai untuk redirect.
 - Jangan tampilkan artikel berstatus `PENDING`/`REJECTED` di halaman/endpoint publik.
 - Jangan hardcode kredensial atau connection string — selalu lewat environment variables (`.env`).
 - Jangan lakukan raw query SQL kecuali Prisma tidak bisa mengakomodasi kasusnya, dan jelaskan alasannya saat itu terjadi.
@@ -76,14 +76,13 @@ Kode wajib mengikuti struktur berlapis berikut, jangan campur semua logic di dal
 app/api/articles/route.ts   → hanya urus request/response (parsing input, panggil service, kembalikan response)
 lib/services/                → business logic (mis. articleService.ts, coverService.ts, statsService.ts)
 lib/repositories/            → akses data via Prisma (mis. articleRepository.ts)
-lib/storage/                 → abstraksi file storage (lokal vs cloud)
 ```
 
 ### Penerapan SOLID (secukupnya, sesuai konteks Next.js/TypeScript — bukan OOP murni)
 
 - **Single Responsibility** — route handler hanya urus HTTP request/response; logic bisnis (verifikasi artikel, generate cover, hitung statistik) ditaruh di service layer; akses database ditaruh di repository layer.
-- **Open/Closed** — modul yang kemungkinan besar berkembang (generator cover, storage provider) dibuat lewat interface, sehingga menambah varian baru tidak perlu mengubah kode yang sudah ada.
-- **Liskov Substitution** — implementasi apa pun dari sebuah interface (misal storage provider) harus bisa saling menggantikan tanpa mengubah perilaku pemanggilnya.
+- **Open/Closed** — modul yang kemungkinan besar berkembang (generator cover) dibuat lewat interface, sehingga menambah varian baru tidak perlu mengubah kode yang sudah ada.
+- **Liskov Substitution** — implementasi apa pun dari sebuah interface (misal generator cover) harus bisa saling menggantikan tanpa mengubah perilaku pemanggilnya.
 - **Interface Segregation** — buat interface yang kecil dan spesifik (mis. `CoverGenerator`, `FileStorage`) daripada satu interface besar yang menangani banyak hal sekaligus.
 - **Dependency Inversion** — service layer bergantung pada interface (mis. `FileStorage`), bukan implementasi konkret (`LocalStorage`/`CloudStorage`) secara langsung, supaya gampang di-swap antara development dan production.
 
@@ -98,7 +97,7 @@ lib/storage/                 → abstraksi file storage (lokal vs cloud)
 
 ### Catatan Penerapan
 
-Jangan terapkan pattern secara berlebihan (over-engineering) untuk skala project ini (±1000 data, tim kecil). Prioritaskan **Single Responsibility** dan **Repository/Service layer** sebagai fondasi wajib. Strategy dan Factory pattern cukup diterapkan di bagian yang memang disebutkan (storage, cover) karena di situlah kemungkinan perubahan/ekspansi paling besar (misal nanti pindah dari Vercel Blob ke S3).
+Jangan terapkan pattern secara berlebihan (over-engineering) untuk skala project ini (±1000 data, tim kecil). Prioritaskan **Single Responsibility** dan **Repository/Service layer** sebagai fondasi wajib. Strategy dan Factory pattern cukup diterapkan di bagian yang memang disebutkan (cover) karena di situlah kemungkinan perubahan/ekspansi paling besar.
 
 ## Skala & Performa
 

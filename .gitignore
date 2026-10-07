@@ -51,8 +51,6 @@ Thumbs.db
 # logs
 *.log
 
-# uploaded files saat development lokal (lihat lib/storage/index.ts)
+# berkas unggahan lokal dari versi lama (LENTERA kini tidak menyimpan berkas)
 /public/uploads/
-
-# berkas PDF unggahan lokal — privat, disajikan hanya lewat /api/articles/[id]/download
 /.uploads/

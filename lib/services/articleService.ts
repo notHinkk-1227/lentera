@@ -1,7 +1,6 @@
 // Service layer: business logic ada di sini, bukan di route handler / halaman.
 // Semua keluaran berupa view-model (lib/types.ts), bukan baris Prisma, supaya data internal
-// (mis. hash kata sandi penulis, fileUrl) tidak ikut terbawa ke UI atau respons API.
-import { randomUUID } from "node:crypto";
+// (mis. hash kata sandi penulis) tidak ikut terbawa ke UI atau respons API.
 import { ServiceError } from "@/lib/errors";
 import {
   toArticleDetail,
@@ -18,8 +17,6 @@ import { authorRepository } from "@/lib/repositories/authorRepository";
 import { categoryRepository, facultyRepository } from "@/lib/repositories/taxonomyRepository";
 import { userRepository } from "@/lib/repositories/userRepository";
 import { generateCover } from "@/lib/services/coverService";
-import { storage } from "@/lib/storage";
-import { looksLikePdf, MAX_PDF_BYTES } from "@/lib/validation/article";
 import type { SimilarArticle } from "@/lib/article-detail";
 
 export const SEARCH_PAGE_SIZE = 12;
@@ -157,16 +154,11 @@ export const articleService = {
     keywords: string[];
     year: number;
     categoryIds: string[];
-    pdf: Buffer;
+    /** Tautan unduh di situs eksternal (opsional). */
+    downloadUrl?: string;
+    scholarUrl?: string;
+    sintaUrl?: string;
   }) {
-    if (input.pdf.length === 0) throw new ServiceError("File PDF wajib diunggah.", 400);
-    if (input.pdf.length > MAX_PDF_BYTES) {
-      throw new ServiceError("Ukuran PDF melebihi 20 MB.", 413);
-    }
-    if (!looksLikePdf(input.pdf)) {
-      throw new ServiceError("Berkas harus berupa PDF yang valid.", 400);
-    }
-
     // Fakultas karya selalu diambil dari profil pengunggah, bukan dari input klien.
     const profile = await userRepository.findFaculty(input.uploaderId);
     if (!profile?.facultyId) {
@@ -181,28 +173,22 @@ export const articleService = {
 
     const author = await authorRepository.ensureForUser(input.uploaderId);
 
-    const key = `articles/${randomUUID()}.pdf`;
-    const { url } = await storage.upload(input.pdf, key);
     const coverUrl = await generateCover({ title: input.title, facultyId: profile.facultyId });
 
-    try {
-      return await articleRepository.create({
-        title: input.title,
-        abstract: input.abstract,
-        keywords: input.keywords,
-        year: input.year,
-        fileUrl: url,
-        coverUrl,
-        uploaderId: input.uploaderId,
-        authorId: author.id,
-        facultyId: profile.facultyId,
-        categoryIds,
-      });
-    } catch (error) {
-      // Jangan tinggalkan berkas yatim bila karya gagal disimpan.
-      await storage.delete(key).catch(() => undefined);
-      throw error;
-    }
+    return articleRepository.create({
+      title: input.title,
+      abstract: input.abstract,
+      keywords: input.keywords,
+      year: input.year,
+      downloadUrl: input.downloadUrl,
+      scholarUrl: input.scholarUrl,
+      sintaUrl: input.sintaUrl,
+      coverUrl,
+      uploaderId: input.uploaderId,
+      authorId: author.id,
+      facultyId: profile.facultyId,
+      categoryIds,
+    });
   },
 
   // ---- Admin ------------------------------------------------------------------
@@ -229,18 +215,19 @@ export const articleService = {
   // ---- Unduh ------------------------------------------------------------------
 
   /**
-   * Cari berkas untuk diunduh. PUBLISHED: siapa saja (dan unduhan dihitung). Selain itu hanya
-   * admin atau pengunggahnya (untuk tinjauan/pratinjau), tanpa menambah hitungan unduhan.
+   * Cari tautan unduh karya (situs eksternal). PUBLISHED: siapa saja (dan klik dihitung).
+   * Selain itu hanya admin atau pengunggahnya (untuk tinjauan), tanpa menambah hitungan.
+   * Null bila karya tidak ada, tidak boleh dilihat, atau belum punya tautan unduh.
    */
   async getDownload(id: string, viewer: { id: string; role: "ADMIN" | "DOSEN" } | null) {
-    const file = await articleRepository.findFileInfo(id);
-    if (!file) return null;
+    const file = await articleRepository.findDownloadInfo(id);
+    if (!file?.downloadUrl) return null;
 
     const isPublished = file.status === "PUBLISHED";
     const mayView = viewer && (viewer.role === "ADMIN" || viewer.id === file.uploaderId);
     if (!isPublished && !mayView) return null;
 
-    return { title: file.title, fileUrl: file.fileUrl, countable: isPublished };
+    return { downloadUrl: file.downloadUrl, countable: isPublished };
   },
 
   registerDownload(id: string) {

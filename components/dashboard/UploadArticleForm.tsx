@@ -3,14 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { KeywordTagInput } from "@/components/dashboard/KeywordTagInput";
-import { FileDropField } from "@/components/dashboard/FileDropField";
 import type { NamedItem } from "@/lib/types";
 
-const MAX_PDF_BYTES = 20 * 1024 * 1024; // sama dengan batas di server (lib/validation/article.ts)
-
-// Dikirim sebagai multipart/form-data ke POST /api/articles. Server memvalidasi ulang semuanya
-// (ukuran, tanda tangan PDF, kategori) dan mengambil fakultas dari profil pengunggah, jadi
-// `facultyName` di bawah murni informasi tampilan.
+// Dikirim sebagai JSON ke POST /api/articles. Tidak ada unggah berkas: karya hanya menaut ke
+// situs eksternal (unduh, Google Scholar, SINTA). Server memvalidasi ulang semuanya (termasuk
+// skema URL) dan mengambil fakultas dari profil pengunggah, jadi `facultyName` di bawah murni
+// informasi tampilan.
 export function UploadArticleForm({
   facultyName,
   categories,
@@ -25,7 +23,9 @@ export function UploadArticleForm({
   const [year, setYear] = useState(new Date().getFullYear());
   const [keywords, setKeywords] = useState<string[]>([]);
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState("");
+  const [scholarUrl, setScholarUrl] = useState("");
+  const [sintaUrl, setSintaUrl] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,26 +42,25 @@ export function UploadArticleForm({
       setError("Judul, abstrak, minimal 1 kata kunci, dan minimal 1 kategori wajib diisi.");
       return;
     }
-    if (!pdfFile) {
-      setError("File PDF artikel wajib diunggah.");
-      return;
-    }
-    if (pdfFile.size > MAX_PDF_BYTES) {
-      setError("Ukuran PDF melebihi 20 MB.");
-      return;
-    }
 
-    const body = new FormData();
-    body.set("title", title.trim());
-    body.set("abstract", abstract.trim());
-    body.set("year", String(year));
-    keywords.forEach((keyword) => body.append("keywords", keyword));
-    categoryIds.forEach((id) => body.append("categoryIds", id));
-    body.set("pdf", pdfFile);
+    const body = {
+      title: title.trim(),
+      abstract: abstract.trim(),
+      year,
+      keywords,
+      categoryIds,
+      downloadUrl: downloadUrl.trim(),
+      scholarUrl: scholarUrl.trim(),
+      sintaUrl: sintaUrl.trim(),
+    };
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/articles", { method: "POST", body });
+      const response = await fetch("/api/articles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { error?: string } | null;
         setError(payload?.error ?? "Karya gagal dikirim. Coba lagi.");
@@ -179,15 +178,55 @@ export function UploadArticleForm({
       </div>
 
       <div className="rounded-lg border border-border bg-surface p-6">
-        <h2 className="font-serif text-lg text-ink">Berkas</h2>
+        <h2 className="font-serif text-lg text-ink">Tautan eksternal</h2>
+        <p className="mt-1 text-sm text-ink-soft">
+          Semua opsional. LENTERA tidak menyimpan berkas PDF, hanya mengarahkan pembaca ke situs
+          lain. Cover dibuat otomatis sesuai fakultas.
+        </p>
 
-        <div className="mt-4">
-          <FileDropField
-            label="File PDF artikel"
-            helperText="Wajib. Maks. 20MB, format PDF. Cover dibuat otomatis sesuai fakultas."
-            accept="application/pdf"
-            onFileSelected={setPdfFile}
-          />
+        <div className="mt-4 flex flex-col gap-4">
+          {[
+            {
+              id: "downloadUrl",
+              label: "Tautan unduh",
+              hint: "Alamat berkas di repositori atau situs jurnal. Tombol Unduh hanya muncul bila diisi.",
+              placeholder: "https://...",
+              value: downloadUrl,
+              onChange: setDownloadUrl,
+            },
+            {
+              id: "scholarUrl",
+              label: "Tautan Google Scholar",
+              hint: "Bila kosong, tautan pencarian Google Scholar dibuat otomatis dari judul.",
+              placeholder: "https://scholar.google.com/...",
+              value: scholarUrl,
+              onChange: setScholarUrl,
+            },
+            {
+              id: "sintaUrl",
+              label: "Tautan SINTA",
+              hint: "Halaman karya atau profil di SINTA.",
+              placeholder: "https://sinta.kemdiktisaintek.go.id/...",
+              value: sintaUrl,
+              onChange: setSintaUrl,
+            },
+          ].map((field) => (
+            <div key={field.id}>
+              <label htmlFor={field.id} className="block text-sm font-medium text-ink">
+                {field.label}
+              </label>
+              <input
+                id={field.id}
+                type="url"
+                inputMode="url"
+                value={field.value}
+                onChange={(e) => field.onChange(e.target.value)}
+                placeholder={field.placeholder}
+                className="mt-1.5 w-full rounded-md border border-border bg-surface px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-soft focus:border-ink focus:outline-none"
+              />
+              <p className="mt-1.5 text-xs text-ink-soft">{field.hint}</p>
+            </div>
+          ))}
         </div>
       </div>
 

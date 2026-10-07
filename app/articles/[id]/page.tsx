@@ -24,8 +24,8 @@ import { articleService } from "@/lib/services/articleService";
 const getDetail = cache((id: string) => articleService.getPublicArticleDetail(id));
 
 // Meta tag untuk crawler Google Scholar (FR-EXT-05, NFR-SEO-01).
-// `citation_pdf_url` belum ada: PDF disajikan lewat /api/articles/[id]/download yang menghitung
-// unduhan, jadi tidak dipasang sebagai URL untuk crawler.
+// `citation_pdf_url` tidak dipasang: tautan unduh ada di situs eksternal dan diakses lewat
+// /api/articles/[id]/download yang menghitung klik.
 export async function generateMetadata({
   params,
 }: {
@@ -48,8 +48,9 @@ export async function generateMetadata({
   };
 }
 
-// Karya non-PUBLISHED menghasilkan 404 (FR-PUB-06). Tombol "Unduh PDF" memanggil
-// /api/articles/[id]/download yang menambah downloadCount (FR-PUB-05).
+// Karya non-PUBLISHED menghasilkan 404 (FR-PUB-06). Tombol "Unduh" (hanya bila karya punya
+// tautan unduh) memanggil /api/articles/[id]/download yang menambah downloadCount lalu
+// mengarahkan ke situs eksternal (FR-PUB-05).
 export const dynamic = "force-dynamic";
 
 export default async function ArticleDetailPage({
@@ -124,13 +125,17 @@ export default async function ArticleDetailPage({
                 <p className="mt-0.5 text-sm text-white/55">{article.facultyName}</p>
 
                 <div className="mt-6 flex flex-wrap items-center gap-2.5">
-                  <a
-                    href={`/api/articles/${article.id}/download`}
-                    className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-white/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                  >
-                    <Download className="h-4 w-4" strokeWidth={1.75} />
-                    Unduh PDF
-                  </a>
+                  {article.hasDownload ? (
+                    <a
+                      href={`/api/articles/${article.id}/download`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm font-medium text-black transition-colors hover:bg-white/85 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    >
+                      <Download className="h-4 w-4" strokeWidth={1.75} />
+                      Unduh
+                    </a>
+                  ) : null}
                   <ExternalLinks article={article} />
                 </div>
               </div>

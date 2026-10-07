@@ -146,10 +146,10 @@ export const articleRepository = {
     });
   },
 
-  findFileInfo(id: string) {
+  findDownloadInfo(id: string) {
     return db.article.findUnique({
       where: { id },
-      select: { id: true, title: true, status: true, fileUrl: true, uploaderId: true },
+      select: { id: true, title: true, status: true, downloadUrl: true, uploaderId: true },
     });
   },
 
@@ -166,7 +166,9 @@ export const articleRepository = {
     abstract: string;
     keywords: string[];
     year: number;
-    fileUrl: string;
+    downloadUrl?: string;
+    scholarUrl?: string;
+    sintaUrl?: string;
     coverUrl: string | null;
     uploaderId: string;
     /** Profil penulis pengunggah; menjadi penulis pertama (korespondensi). */

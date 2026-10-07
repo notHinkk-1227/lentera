@@ -94,7 +94,9 @@ model Article {
   status        ArticleStatus     @default(PENDING)
   rejectedNote  String?
 
-  fileUrl       String
+  // Tautan unduh berkas di situs lain (repositori/jurnal). LENTERA tidak menyimpan PDF sendiri.
+  // Diakses publik lewat /api/articles/[id]/download (menghitung unduhan lalu redirect).
+  downloadUrl   String?
   coverUrl      String?
 
   downloadCount Int               @default(0)
@@ -114,6 +116,7 @@ model Article {
   doi           String?
   scopusUrl     String?
   scholarUrl    String?
+  sintaUrl      String?
 
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt

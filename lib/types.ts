@@ -61,6 +61,10 @@ export type QueuedArticle = {
   keywords: string[];
   submittedAt: string; // YYYY-MM-DD
   coverTheme: CoverThemeKey;
+  /** Tautan eksternal yang diisi pengunggah; admin memeriksanya sebelum menerbitkan. */
+  downloadUrl?: string;
+  scholarUrl?: string;
+  sintaUrl?: string;
 };
 
 export type NamedItem = { id: string; name: string };

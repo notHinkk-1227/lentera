@@ -92,6 +92,9 @@ export function toQueuedArticle(row: ArticleListRow): QueuedArticle {
     keywords: row.keywords,
     submittedAt: toDate(row.createdAt),
     coverTheme: resolveCoverTheme(row.faculty.name, categoryNamesOf(row)),
+    downloadUrl: row.downloadUrl ?? undefined,
+    scholarUrl: row.scholarUrl ?? undefined,
+    sintaUrl: row.sintaUrl ?? undefined,
   };
 }
 
@@ -126,6 +129,8 @@ export function toArticleDetail(row: ArticleDetailRow): PublicArticleDetail {
     doi: row.doi ?? undefined,
     scopusUrl: row.scopusUrl ?? undefined,
     scholarUrl: row.scholarUrl ?? undefined,
+    sintaUrl: row.sintaUrl ?? undefined,
+    hasDownload: Boolean(row.downloadUrl),
     region: row.region ?? undefined,
     partner: row.partner ?? undefined,
   };
