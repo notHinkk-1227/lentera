@@ -1,14 +1,17 @@
 // Seed taksonomi roadmap. Aman dijalankan berulang (upsert).
-//   npx tsx prisma/seed-roadmap.ts
+//
+// Dua cara pakai:
+//   1. Langsung:           npm run db:seed:roadmap   (tsx prisma/seed-roadmap.ts)
+//   2. Dari seed.ts:       import { seedRoadmap } from "./seed-roadmap"
+//      sehingga `npx prisma db seed` / `prisma migrate reset` sudah mengisi roadmap,
+//      dan karya contoh bisa langsung ditautkan ke topik roadmap.
 //
 // Catatan: kalau project-mu memakai Prisma client dengan output custom / driver
-// adapter, ganti dua baris import+instansiasi di bawah dengan instance dari lib/db.ts.
+// adapter, ganti instansiasi PrismaClient di bagian CLI dengan instance dari lib/db.ts.
 import { PrismaClient } from "@prisma/client";
 import { themes, streams, pkmFocusAreas, years, researchTopics, pkmTopics } from "./roadmap";
 
-const prisma = new PrismaClient();
-
-async function main() {
+export async function seedRoadmap(prisma: PrismaClient) {
   // 1. Tema penelitian unggulan
   for (const t of themes) {
     await prisma.researchTheme.upsert({
@@ -74,12 +77,16 @@ async function main() {
     prisma.roadmapTopic.count(),
     prisma.researchTheme.count(),
   ]);
-  console.log(`Seed selesai: ${nTopics} topik roadmap (harusnya 72), ${nThemes} tema.`);
+  console.log(`Seed roadmap selesai: ${nTopics} topik (harusnya 72), ${nThemes} tema.`);
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+// Jalankan hanya bila file ini yang dieksekusi langsung (bukan saat di-import seed.ts).
+if (process.argv[1]?.endsWith("seed-roadmap.ts")) {
+  const prisma = new PrismaClient();
+  seedRoadmap(prisma)
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(() => prisma.$disconnect());
+}
